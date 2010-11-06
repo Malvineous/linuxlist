@@ -36,6 +36,11 @@
 #include <errno.h>
 #include <iostream> // for errors before we get to nCurses
 
+#include <camoto/bitstream.hpp>
+
+#define min(x, y) (((x) < (y)) ? (x) : (y))
+#define max(x, y) (((x) > (y)) ? (x) : (y))
+
 struct CGAColour
 {
 	unsigned char iFG;
@@ -359,34 +364,38 @@ class IView
 class HexView: virtual public IView
 {
 	std::string strFilename;
-	std::fstream& file;
+	camoto::bitstream file;
 	IConsole *pConsole;
 	bool bStatusAlertVisible;
 	int iLineWidth;
-	byte *pLineBuffer;
+	int *pLineBuffer;
+	int bitWidth;             ///< Number of bits in each char/cell
+	int intraByteOffset;      ///< Bit-level seek offset within cell (0..bitWidth-1)
 
 	std::fstream::off_type iOffset; // Offset into file of first character in content window
 	std::fstream::off_type iFileSize;
 
 	public:
-		HexView(std::string strFilename, std::fstream& file,
+		HexView(std::string strFilename, camoto::iostream_sptr file,
 			std::fstream::off_type iFileSize, IConsole *pConsole)
 			throw () :
 				strFilename(strFilename),
-				file(file),
+				file(file, camoto::bitstream::littleEndian),
 				pConsole(pConsole),
 				bStatusAlertVisible(true), // trigger an update when next set
 				iLineWidth(16),
 				pLineBuffer(NULL),
 				iOffset(0),
-				iFileSize(iFileSize)
+				iFileSize(iFileSize),
+				bitWidth(8),
+				intraByteOffset(0)
 		{
 			// Draw the first page of data
 			this->pConsole->setStatusBar(SB_TOP, SB_LEFT, strFilename);
 			this->statusAlert(NULL); // draw the bottom status bar with no alert
 			//this->pConsole->setStatusBar(SB_BOTTOM, SB_LEFT, " Command>  *** End of file ***");
 
-			this->pLineBuffer = new byte[this->iLineWidth];
+			this->pLineBuffer = new int[this->iLineWidth];
 
 			int iWidth, iHeight;
 			this->pConsole->getContentDims(&iWidth, &iHeight);
@@ -411,8 +420,14 @@ class HexView: virtual public IView
 			this->statusAlert(NULL);
 			switch (c) {
 				case 'q': return false;
-				case '-': if (this->iLineWidth > 1) this->iLineWidth--; this->redrawLines(0, iHeight); break;
-				case '+': if (this->iLineWidth < (iWidth - 10 - (this->iLineWidth / 8)) / 4) this->iLineWidth++; this->redrawLines(0, iHeight); break;
+				case '-': if (this->iLineWidth > 1) this->iLineWidth--; this->redrawScreen(); break;
+				case '+': if (this->iLineWidth < (iWidth - 10 - (this->iLineWidth / 8)) / 4) this->iLineWidth++; this->redrawScreen(); break;
+				case 'b': this->setBitWidth(max(1, this->bitWidth - 1)); break;
+				case 'B': this->setBitWidth(min(sizeof(int)*8, this->bitWidth + 1)); break;
+				case 's': this->setIntraByteOffset(-1); break;
+				case 'S': this->setIntraByteOffset(1); break;
+				case 'e': this->file.changeEndian(camoto::bitstream::littleEndian); this->redrawScreen(); break;
+				case 'E': this->file.changeEndian(camoto::bitstream::bigEndian); this->redrawScreen(); break;
 				case KEY_UP: this->scrollRel(-this->iLineWidth); break;
 				case KEY_DOWN: this->scrollRel(this->iLineWidth); break;
 				case KEY_LEFT: this->scrollRel(-1); break;
@@ -421,9 +436,10 @@ class HexView: virtual public IView
 				case KEY_NPAGE: this->scrollRel(this->iLineWidth*iHeight); break;
 				case KEY_HOME: this->scrollAbs(0); break;
 				case KEY_END: {
-					int iLastLineLen = this->iFileSize % this->iLineWidth;
+					int fileSizeInCells = (this->iFileSize * 8 / this->bitWidth);
+					int iLastLineLen = fileSizeInCells % this->iLineWidth;
 					if (iLastLineLen == 0) iLastLineLen = this->iLineWidth;
-					this->scrollAbs(this->iFileSize - iLastLineLen -
+					this->scrollAbs(fileSizeInCells - iLastLineLen -
 						(iHeight - 1) * this->iLineWidth);
 					break;
 				}
@@ -560,22 +576,15 @@ class HexView: virtual public IView
 			int y = iTop;
 			std::fstream::off_type iCurOffset = this->iOffset + iTop * this->iLineWidth;
 			file.clear(); // clear any errors (e.g. reaching EOF previously)
-			file.seekg(iCurOffset, std::ios::beg);
+			file.seek(iCurOffset * this->bitWidth + this->intraByteOffset, std::ios::beg);
 			if (iCurOffset < this->iFileSize) {
 				for (; y < iBottom; y++) {
 
 					// Don't read past the end of the file
 					int iRead;
-					/*iCurOffset += this->iLineWidth;
-					if (iCurOffset > this->iFileSize)
-						iRead = this->iFileSize - (iCurOffset - this->iLineWidth);
-					else
-						iRead = this->iLineWidth;*/
-					//if (iRead == 0) break;
-
-					iRead = this->iLineWidth;
-					file.read((char *)this->pLineBuffer, iRead);
-					iRead = file.gcount();
+					for (iRead = 0; iRead < this->iLineWidth; iRead++) {
+						if (!file.read(this->bitWidth, &this->pLineBuffer[iRead])) break;
+					}
 
 					this->drawLine(y, iOffset + (y * this->iLineWidth),
 						this->pLineBuffer, iRead);
@@ -596,7 +605,7 @@ class HexView: virtual public IView
 
 		// Display the file data (starting at the current offset) in the content
 		// window.
-		void drawLine(int iLine, unsigned long iOffset, const byte *pData, int iLen)
+		void drawLine(int iLine, unsigned long iOffset, const int *pData, int iLen)
 			throw ()
 		{
 			this->pConsole->gotoxy(0, iLine);
@@ -609,34 +618,35 @@ class HexView: virtual public IView
 				<< std::setfill('0') << std::setw(8)
 				<< iOffset << " ";
 
-			const byte *pb = pData;
+			// Number of chars wide each num is (e.g. 9-bit nums are three chars wide)
+			int cellNumberWidth = (this->bitWidth + 3) / 4;
+
+			const int *pb = pData;
 			for (int i = 0; i < iLen; pb++, i++) {
 
 				// Hex display (middle)
 
 				osHex << ((i && (i % 8 == 0)) ? "  " : " ");
 				//else if (i % 4 == 0) ostr << ' ';
-				osHex << std::setfill('0') << std::setw(2) << (int)*pb;
+				osHex << std::setfill('0') << std::setw(cellNumberWidth) << (int)*pb;
 
 				// Binary display (right)
 
 				if (*pb < 32) {
 					// This is a control character, so it needs to be manually converted
 					if (*pb == 0) osBin << ' ';
-					else osBin << *pb;
-				/*} else if (*pb >= 127) {
-					// This is an extended ASCII character, so convert it to the
-					// terminal's current character set if possible.
-					osBin << '?';*/
+					else osBin << (char)*pb;
+				} else if (*pb < 256) {
+					osBin << (char)*pb;
 				} else {
-					osBin << *pb;
+					osBin << '.'; // TODO: some non-ASCII char
 				}
 
 			}
 			// Pad out any data at the end of the file
 			for (int i = iLen; i < this->iLineWidth; i++) {
 				osHex << ((i && (i % 8 == 0)) ? "  " : " ");
-				osHex << "  ";
+				for (int j = 0; j < cellNumberWidth; j++) osHex << ' ';
 				osBin << ' ';
 			}
 			osHex << "  " << osBin.str();// << 'x';
@@ -646,6 +656,74 @@ class HexView: virtual public IView
 			//this->pConsole->putstr("test");
 			return;
 		}
+
+		/// Set the size of each cell in bits.
+		/**
+		 * When this is set to eight, a normal byte-level view will be shown.
+		 */
+		void setBitWidth(int newWidth)
+		{
+			// Since the first bit on the screen should stay the same after
+			// this change, we need to adjust offsets.
+			int bitOffset = this->iOffset * this->bitWidth + this->intraByteOffset;
+
+			this->bitWidth = newWidth;
+			this->intraByteOffset = bitOffset % this->bitWidth;
+			this->iOffset = bitOffset / this->bitWidth;
+
+			assert(bitOffset == this->iOffset * this->bitWidth + this->intraByteOffset);
+
+			this->redrawScreen();
+			return;
+		}
+
+		/// Set the bit-level offset within the cell.
+		/**
+		 * Using eight bit bytes as an example, when this is set to zero bytes
+		 * will be shown as normal.  When this is set to 1, the first *bit* in
+		 * the file will be discarded and the following eight bits (last seven
+		 * bits in the first input byte, and first bit in the second input byte)
+		 * will appear as the first byte on the screen.
+		 */
+		void setIntraByteOffset(int delta)
+		{
+			if ((this->intraByteOffset + delta) >= this->bitWidth) {
+				this->iOffset++;
+			} else if ((this->intraByteOffset + delta) < 0) {
+				if (this->iOffset > 0) this->iOffset--;
+				else return; // can't go past start of file
+			}
+			this->intraByteOffset = (this->intraByteOffset + this->bitWidth + delta) % this->bitWidth;
+			this->redrawScreen();
+			return;
+		}
+
+		/// Regenerate the entire content on the display.
+		/**
+		 * This is normally only called after a change that affects the entire
+		 * display, e.g. a change in the number of bits shown per byte.
+		 */
+		void redrawScreen()
+		{
+			int iWidth, iHeight;
+			this->pConsole->getContentDims(&iWidth, &iHeight);
+
+			std::ostringstream ss;
+			ss << "Offset: " << this->iOffset << '+' << this->intraByteOffset
+				<< "b  Cell size: " << this->bitWidth
+				<< "b/";
+			if (this->file.getEndian() == camoto::bitstream::littleEndian) {
+				ss << "LE";
+			} else {
+				ss << "BE";
+			}
+			ss << "  Width: " << this->iLineWidth;
+			this->pConsole->setStatusBar(SB_TOP, SB_RIGHT, ss.str());
+
+			this->redrawLines(0, iHeight);
+			return;
+		}
+
 };
 
 int main(int iArgC, char *cArgV[])
@@ -668,10 +746,10 @@ int main(int iArgC, char *cArgV[])
 
 	//std::string strFilename = "/home/adam/dos/ctl.txt";
 	std::string strFilename = cArgV[1];
-	std::fstream fsFile(strFilename.c_str(), std::fstream::binary | std::fstream::in | std::fstream::out);
+	camoto::iostream_sptr fsFile(new std::fstream(strFilename.c_str(), std::fstream::binary | std::fstream::in | std::fstream::out));
 
-	fsFile.seekg(0, std::ios::end);
-	std::fstream::off_type iFileSize = fsFile.tellg();
+	fsFile->seekg(0, std::ios::end);
+	std::fstream::off_type iFileSize = fsFile->tellg();
 
 	IView *pView = new HexView(strFilename, fsFile, iFileSize, pConsole);
 

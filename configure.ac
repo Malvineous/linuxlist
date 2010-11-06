@@ -18,7 +18,7 @@ AC_PROG_CXX
 # Checks for libraries.
 AC_PROG_LIBTOOL
 
-#AC_DEFINE([HAVE_CURSES_H], [1], [Is ncurses available])
+PKG_CHECK_MODULES([libgamecommon], [libgamecommon])
 
 AX_WITH_CURSES
 case "$ax_cv_ncurses" in "no")
