@@ -582,11 +582,12 @@ class HexView: virtual public IView
 
 					// Don't read past the end of the file
 					int iRead;
+					int bytesPerLine = (this->iLineWidth * this->bitWidth) >> 3;
 					for (iRead = 0; iRead < this->iLineWidth; iRead++) {
 						if (!file.read(this->bitWidth, &this->pLineBuffer[iRead])) break;
 					}
 
-					this->drawLine(y, iOffset + (y * this->iLineWidth),
+					this->drawLine(y, iOffset + y * bytesPerLine,
 						this->pLineBuffer, iRead);
 					if (iRead < this->iLineWidth) {
 						y++;
