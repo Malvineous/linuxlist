@@ -148,6 +148,8 @@ class NCursesConsole: virtual public IConsole
 		WINDOW *winStatus[2]; // 0 == top, 1 == bottom
 		WINDOW *winContent; // main display area (between the status bars)
 
+		int maxLineLen;  /// Maximum length of a single line (will expand as necessary)
+
 		iconv_t cd;
 
 // Colour pairs
@@ -157,7 +159,8 @@ class NCursesConsole: virtual public IConsole
 
 	public:
 		NCursesConsole(void)
-			throw ()
+			throw () :
+				maxLineLen(80)
 		{
 			// Init iconv
 			setlocale(LC_ALL, ""); // set locale based on LANG env var
@@ -300,12 +303,18 @@ class NCursesConsole: virtual public IConsole
 		{
 			if (this->cd != (iconv_t)-1) {
 				// iconv is valid, convert
-				wchar_t *wout = new wchar_t[256];
+			again:
+				wchar_t *wout = new wchar_t[this->maxLineLen];
 				char *pIn = (char *)strContent.c_str();
 				char *pOut = (char *)wout;
-				size_t inleft = strContent.length(), outleft;
+				size_t inleft = strContent.length(), outleft = sizeof(wchar_t) * this->maxLineLen;
 				if (iconv(cd, &pIn, &inleft, &pOut, &outleft) == (size_t)-1) {
-					perror("iconv");
+					if ((errno == E2BIG) && (this->maxLineLen < 0x10000)) {
+						this->maxLineLen <<= 1;
+						delete[] wout;
+						goto again;
+					}
+					this->setStatusBar(SB_BOTTOM, SB_LEFT, std::string("!!> iconv error: ") + strerror(errno));
 				} else {
 					//printf("%d chars", ((wchar_t *)pOut) - wout);
 					size_t iCount = (wchar_t *)pOut - wout;
@@ -367,8 +376,9 @@ class HexView: virtual public IView
 	camoto::bitstream file;
 	IConsole *pConsole;
 	bool bStatusAlertVisible;
-	int iLineWidth;
-	int *pLineBuffer;
+	int iLineWidth;           ///< Size of line shown to user, initially 16 chars
+	int *pLineBuffer;         ///< Line buffer, initially 16 chars
+	int iLineAlloc;           ///< Size of pLineBuffer in bytes (may be > iLineWidth)
 	int bitWidth;             ///< Number of bits in each char/cell
 	int intraByteOffset;      ///< Bit-level seek offset within cell (0..bitWidth-1)
 
@@ -384,6 +394,7 @@ class HexView: virtual public IView
 				pConsole(pConsole),
 				bStatusAlertVisible(true), // trigger an update when next set
 				iLineWidth(16),
+				iLineAlloc(16),
 				pLineBuffer(NULL),
 				iOffset(0),
 				iFileSize(iFileSize),
@@ -420,8 +431,8 @@ class HexView: virtual public IView
 			this->statusAlert(NULL);
 			switch (c) {
 				case 'q': return false;
-				case '-': if (this->iLineWidth > 1) this->iLineWidth--; this->redrawScreen(); break;
-				case '+': if (this->iLineWidth < (iWidth - 10 - (this->iLineWidth / 8)) / 4) this->iLineWidth++; this->redrawScreen(); break;
+				case '-': this->adjustLineWidth(-1); break;
+				case '+': this->adjustLineWidth(+1); break;
 				case 'b': this->setBitWidth(max(1, this->bitWidth - 1)); break;
 				case 'B': this->setBitWidth(min(sizeof(int)*8, this->bitWidth + 1)); break;
 				case 's': this->setIntraByteOffset(-1); break;
@@ -722,6 +733,41 @@ class HexView: virtual public IView
 			this->pConsole->setStatusBar(SB_TOP, SB_RIGHT, ss.str());
 
 			this->redrawLines(0, iHeight);
+			return;
+		}
+
+		/// Increase or decrease the line width.
+		/**
+		 * This adjusts how long each line of hex data is.
+		 *
+		 * @param delta
+		 *   Amount of change, -1 will shorten the row by one byte, +1 will increase
+		 *   it by one byte.
+		 *
+		 * @post If the value is within range, the screen is redrawn using the new
+		 *   width.  If the value would have moved the width out of range, nothing
+		 *   will be changed or redrawn.
+		 */
+		void adjustLineWidth(int delta)
+		{
+			int iWidth, iHeight;
+			this->pConsole->getContentDims(&iWidth, &iHeight);
+
+			int newWidth = this->iLineWidth + delta;
+			if (newWidth < 1) newWidth = 1;
+			int maxWidth = (iWidth - 11) / 4; // 4 chars per byte (hex, hex, space and binary)
+			maxWidth -= 0.5 + maxWidth / (8 * 4); // plus an extra space every 8 chars (have to *4 to cancel out the /4 above)
+			if (newWidth > maxWidth) newWidth = maxWidth;
+			if (this->iLineWidth != newWidth) {
+				this->iLineWidth = newWidth;
+				if (this->iLineWidth > this->iLineAlloc) {
+					// Enlarge the buffer
+					delete[] this->pLineBuffer;
+					this->pLineBuffer = new int[this->iLineWidth];
+					this->iLineAlloc = this->iLineWidth;
+				}
+				this->redrawScreen();
+			}
 			return;
 		}
 
