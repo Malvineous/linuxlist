@@ -166,6 +166,29 @@ NCursesConsole::~NCursesConsole()
 	iconv_close(this->cd);
 }
 
+void NCursesConsole::mainLoop(IView *pView)
+	throw ()
+{
+	Key c;
+	do {
+		c = (Key)getch();
+		// Convert platform-specific keys into generic keys
+		switch (c) {
+			case KEY_UP:    c = Key_Up; break;
+			case KEY_DOWN:  c = Key_Down; break;
+			case KEY_LEFT:  c = Key_Left; break;
+			case KEY_RIGHT: c = Key_Right; break;
+			case KEY_PPAGE: c = Key_PageUp; break;
+			case KEY_NPAGE: c = Key_PageDown; break;
+			case KEY_HOME:  c = Key_Home; break;
+			case KEY_END:   c = Key_End; break;
+			default: break; // TODO: ignore unknown key to avoid clash
+		}
+	} while (pView->processKey(c));
+
+	return;
+}
+
 void NCursesConsole::update(void)
 	throw ()
 {

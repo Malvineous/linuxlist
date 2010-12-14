@@ -22,6 +22,7 @@
 #define ICONSOLE_HPP_
 
 #include <string>
+#include "IView.hpp"
 
 /// Which status bar to use.
 enum SB_Y {
@@ -43,6 +44,9 @@ class IConsole
 			throw ()
 		{
 		}
+
+		/// Main loop for reading keystrokes and passing actions to view
+		virtual void mainLoop(IView *pView) throw () = 0;
 
 		// Update the content area (not status bars) after changes have been made
 		virtual void update(void)

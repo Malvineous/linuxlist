@@ -58,6 +58,9 @@ class NCursesConsole: virtual public IConsole
 		~NCursesConsole()
 			throw ();
 
+		void mainLoop(IView *pView)
+			throw ();
+
 		void update(void)
 			throw ();
 
