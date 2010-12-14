@@ -20,6 +20,9 @@
 
 #include "HexView.hpp"
 
+/// Number of chars wide each num is (e.g. 9-bit nums are three chars wide)
+#define CALC_HEXCELL_WIDTH ((this->bitWidth + 3) / 4)
+
 HexView::HexView(std::string strFilename, camoto::iostream_sptr file,
 	std::fstream::off_type iFileSize, IConsole *pConsole)
 	throw () :
@@ -266,7 +269,7 @@ void HexView::drawLine(int iLine, unsigned long iOffset, const int *pData, int i
 		<< iOffset << " ";
 
 	// Number of chars wide each num is (e.g. 9-bit nums are three chars wide)
-	int cellNumberWidth = (this->bitWidth + 3) / 4;
+	int cellNumberWidth = CALC_HEXCELL_WIDTH;
 
 	const int *pb = pData;
 	for (int i = 0; i < iLen; pb++, i++) {
@@ -320,6 +323,9 @@ void HexView::setBitWidth(int newWidth)
 	this->iOffset = bitOffset / this->bitWidth;
 
 	assert(bitOffset == this->iOffset * this->bitWidth + this->intraByteOffset);
+
+	// Make sure the data hasn't gone off the edge of the screen
+	this->adjustLineWidth(0);
 
 	this->redrawScreen();
 	return;
@@ -394,7 +400,10 @@ void HexView::adjustLineWidth(int delta)
 
 	int newWidth = this->iLineWidth + delta;
 	if (newWidth < 1) newWidth = 1;
-	int maxWidth = (iWidth - 11) / 4; // 4 chars per byte (hex, hex, space and binary)
+	// Width required to display a single byte of data (hex digits + binary), e.g.
+	// 4 chars per byte by default (hex, hex, space and binary)
+	int byteWidth = 2 + CALC_HEXCELL_WIDTH; // 2 == binary + space
+	int maxWidth = (iWidth - 11) / byteWidth;
 	maxWidth -= 0.5 + maxWidth / (8 * 4); // plus an extra space every 8 chars (have to *4 to cancel out the /4 above)
 	if (newWidth > maxWidth) newWidth = maxWidth;
 	if (this->iLineWidth != newWidth) {
