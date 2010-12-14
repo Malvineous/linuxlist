@@ -115,7 +115,6 @@ NCursesConsole::NCursesConsole(void)
 			COLOR_PAIR(CLR_STATUSBAR) | this->iAttribute[CLR_STATUSBAR]);
 		wbkgdset(this->winStatus[i], COLOR_PAIR(CLR_STATUSBAR));
 		wclear(this->winStatus[i]);
-		mvwprintw(this->winStatus[i], 0, 50, "%s", "Content goes here");
 	}
 
 	// Create the main window between the status bars
@@ -124,35 +123,15 @@ NCursesConsole::NCursesConsole(void)
 		COLOR_PAIR(CLR_CONTENT) | this->iAttribute[CLR_CONTENT]);
 	wbkgdset(this->winContent, COLOR_PAIR(CLR_CONTENT));
 	wclear(this->winContent);
-	//mvwprintw(this->winContent, 0, 0, "%s", "Content goes here");
 
 	idlok(this->winContent, TRUE); // enable efficient scrolling
 	scrollok(this->winContent, TRUE); // Allow scrolling
 
-	// Annoyingly, we have to do a refresh() here even though we haven't
-	// finished preparing the output.  If this is left out, the screen
-	// never gets drawn :-(  Also dotting getch() calls throughout the init
-	// code can have a similar effect.  Isn't dodgy code great?
-	refresh();
-
-	/*wrefresh(this->winContent);
 	wnoutrefresh(this->winStatus[0]);
 	wnoutrefresh(this->winStatus[1]);
-	//wnoutrefresh(this->winContent);
-	doupdate();*/
 	wnoutrefresh(this->winContent);
 
-	//refresh();
-	// Set status bar attributes
-	//attrset(COLOR_PAIR(CLR_STATUSBAR) | this->iAttribute[CLR_STATUSBAR]);
-	//mvprintw(0, 0, "%s", "This is a test");
-	//mvchgat(0, 0, -1, this->iAttribute[CLR_STATUSBAR], CLR_STATUSBAR, NULL);
-	//mvchgat(LINES-1, 0, -1, this->iAttribute[CLR_STATUSBAR], CLR_STATUSBAR, NULL);
-
-
-	//print_in_middle(stdscr, LINES / 2, 0, 0, "Viola !!! In color ...");
-	//attroff(COLOR_PAIR(1));
-
+	refresh();
 }
 
 NCursesConsole::~NCursesConsole()
@@ -202,7 +181,10 @@ void NCursesConsole::update(void)
 void NCursesConsole::clearStatusBar(SB_Y eY)
 	throw ()
 {
-	wclear(this->winStatus[eY]);
+	// Erasing the line avoids the entire screen flickering as it does if we
+	// use wclear() instead.
+	wmove(this->winStatus[eY], 0, 0);
+	wclrtoeol(this->winStatus[eY]);
 	return;
 }
 

@@ -45,10 +45,7 @@ HexView::HexView(std::string strFilename, camoto::iostream_sptr file,
 
 	this->pLineBuffer = new int[this->iLineWidth];
 
-	int iWidth, iHeight;
-	this->pConsole->getContentDims(&iWidth, &iHeight);
-	this->redrawLines(0, iHeight);
-
+	this->redrawScreen();
 	this->pConsole->update();
 }
 
