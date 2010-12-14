@@ -36,10 +36,10 @@
 /// Hex editor view.
 class HexView: virtual public IView
 {
-	std::string strFilename;
-	camoto::bitstream file;
-	IConsole *pConsole;
-	bool bStatusAlertVisible;
+	std::string strFilename;  ///< Filename of open file
+	camoto::bitstream file;   ///< Bitstream for reading data from file
+	IConsole *pConsole;       ///< Console used for drawing content
+	bool bStatusAlertVisible; ///< true if an alert is visible in the status bar
 	int iLineWidth;           ///< Size of line shown to user, initially 16 chars
 	int *pLineBuffer;         ///< Line buffer, initially 16 chars
 	int iLineAlloc;           ///< Size of pLineBuffer in bytes (may be > iLineWidth)
@@ -60,21 +60,58 @@ class HexView: virtual public IView
 		bool processKey(Key c)
 			throw ();
 
-		// Set an alert message on the status bar, or remove one if cMsg == NULL
+		/// Set an alert message on the status bar.
+		/**
+		 * @param cMsg
+		 *   Message to show.  If NULL, message is removed.
+		 */
 		void statusAlert(const char *cMsg)
 			throw ();
 
+		/// Scroll to an absolute offset.
+		/**
+		 * @param iNewOffset
+		 *   Offset to of byte to appear at (0,0)
+		 */
 		void scrollAbs(unsigned long iNewOffset)
 			throw ();
 
+		/// Scroll vertically by this number of lines.
+		/**
+		 * @param iDelta
+		 *   Number of lines to scroll.  -1 will scroll back one byte, +1 will
+		 *   scroll forward one byte.  -this->iLineWidth will scroll up one line,
+		 *   +this->iLineWidth will scroll down one line.
+		 */
 		void scrollRel(int iDelta)
 			throw ();
 
+		/// Redraw part of the screen.
+		/**
+		 * @param iTop
+		 *   First line to redraw, 0 is first data line (just below top status bar)
+		 *
+		 * @param iBottom
+		 *   Stop drawing at this line.  iBottom-1 is the actual last line drawn.
+		 */
 		void redrawLines(int iTop, int iBottom)
 			throw ();
 
-		// Display the file data (starting at the current offset) in the content
-		// window.
+		/// Display the file data (starting at the current offset) in the content
+		/// window.
+		/**
+		 * @param iLine
+		 *   Line number (0 is first line)
+		 *
+		 * @param iOffset
+		 *   Value to display in file-offset column.
+		 *
+		 * @param pData
+		 *   Data to show
+		 *
+		 * @param iLen
+		 *   Line length/length of pData
+		 */
 		void drawLine(int iLine, unsigned long iOffset, const int *pData, int iLen)
 			throw ();
 

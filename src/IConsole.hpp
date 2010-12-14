@@ -40,38 +40,99 @@ enum SB_X {
 class IConsole
 {
 	public:
+		/// Virtual destructor.
 		virtual ~IConsole()
 			throw ()
 		{
 		}
 
-		/// Main loop for reading keystrokes and passing actions to view
-		virtual void mainLoop(IView *pView) throw () = 0;
+		/// Main loop for reading keystrokes and passing actions to view.
+		/**
+		 * @param pView
+		 *   IView to pass keypress events to.
+		 *
+		 * @return On return the application will terminate.
+		 */
+		virtual void mainLoop(IView *pView)
+			throw () = 0;
 
-		// Update the content area (not status bars) after changes have been made
+		/// Update the content area (not status bars) after changes have been made.
 		virtual void update(void)
 			throw () = 0;
 
-		/*// Same as update but only affects the status bars
-		virtual void updateStatusBars(void)
-			throw () = 0;*/
-
-		// Blank out the text on the specified status bar.  Not shown until update()
+		/// Blank out the text on the specified status bar.
+		/**
+		 * @note The change is not shown until the next call to update().
+		 */
 		virtual void clearStatusBar(SB_Y eY)
 			throw () = 0;
 
-		// Set the content of the top status bar.  Not shown until next update().
+		/// Set the content of the given status bar.
+		/**
+		 * @note The change is not shown until the next call to update().
+		 *
+		 * @param eY
+		 *   Status bar to change (top/bottom)
+		 *
+		 * @param eX
+		 *   Area of the status bar to change (left/mid/right)
+		 *
+		 * @param strMessage
+		 *   Text to show.
+		 */
 		virtual void setStatusBar(SB_Y eY, SB_X eX, const std::string& strMessage)
 			throw () = 0;
 
 		//
 		// Display routines
 		//
-		virtual void gotoxy(int x, int y) throw () = 0;
-		virtual void putstr(const std::string& strContent) throw () = 0;
-		virtual void getContentDims(int *iWidth, int *iHeight) throw () = 0;
-		virtual void scrollContent(int iX, int iY) throw () = 0;
-		virtual void eraseToEOL(void) throw () = 0; // erase from cursor pos to end of line
+
+		/// Move the cursor to the given location.
+		/**
+		 * @param x
+		 *   New X-coordinate, 0 is left-most.
+		 *
+		 * @param y
+		 *   New Y-coordinate, 0 is top-most.
+		 */
+		virtual void gotoxy(int x, int y)
+			throw () = 0;
+
+		/// Write a string at the current location.
+		/**
+		 * @param strContent
+		 *   String to write.
+		 */
+		virtual void putstr(const std::string& strContent)
+			throw () = 0;
+
+		/// Get the screen size.
+		/**
+		 * The values are in text cells, e.g. 80x25.
+		 *
+		 * @param iWidth
+		 *   Pointer to where the width value will be written.
+		 *
+		 * @param iHeight
+		 *   Pointer to where the height value will be written.
+		 */
+		virtual void getContentDims(int *iWidth, int *iHeight)
+			throw () = 0;
+
+		/// Scroll the content area (between the status bars)
+		/**
+		 * @param iX
+		 *   Number of cells to scroll horizontally.
+		 *
+		 * @param iY
+		 *   Number of cells to scroll vertically.
+		 */
+		virtual void scrollContent(int iX, int iY)
+			throw () = 0;
+
+		/// Erase from the current location to the end of the line.
+		virtual void eraseToEOL()
+			throw () = 0;
 
 };
 

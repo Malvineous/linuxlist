@@ -20,11 +20,7 @@
 
 #include <config.h>
 
-#include <stdlib.h> // for abs()
-#include <string>
 #include <fstream>
-#include <cassert>
-
 #include <iostream>
 #include "cfg.hpp"
 
@@ -57,7 +53,6 @@ int main(int iArgC, char *cArgV[])
 	IConsole *pConsole = new NCursesConsole();
 #endif
 
-	//std::string strFilename = "/home/adam/dos/ctl.txt";
 	std::string strFilename = cArgV[1];
 	camoto::iostream_sptr fsFile(new std::fstream(strFilename.c_str(), std::fstream::binary | std::fstream::in | std::fstream::out));
 

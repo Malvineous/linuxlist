@@ -21,7 +21,7 @@
 #ifndef IVIEW_HPP_
 #define IVIEW_HPP_
 
-/// Keycode definitions.
+/// Keycode definitions.  Values < 256 are ASCII values.
 enum Key {
 	Key_None = 0,
 	Key_Up = 256,
@@ -38,7 +38,13 @@ enum Key {
 class IView
 {
 	public:
-		// Process the given key.  Returns true to keep going, false to quit.
+		/// Process the given key.
+		/**
+		 * @param c
+		 *   Key to react to.
+		 *
+		 * @return true to keep going, false to quit.
+		 */
 		virtual bool processKey(Key c)
 			throw () = 0;
 };

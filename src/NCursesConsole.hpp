@@ -34,22 +34,23 @@
 #include <iconv.h>
 #include "IConsole.hpp"
 
+/// Console interface to a standard terminal using ncurses for control codes.
 class NCursesConsole: virtual public IConsole
 {
 	private:
 		// The status bars need to be separate windows, otherwise updating them
 		// will overwrite the content window!
-		WINDOW *winStatus[2]; // 0 == top, 1 == bottom
-		WINDOW *winContent; // main display area (between the status bars)
+		WINDOW *winStatus[2]; ///< Status bars (0 == top, 1 == bottom)
+		WINDOW *winContent;   ///< Main display area (between the status bars)
 
-		int maxLineLen;  /// Maximum length of a single line (will expand as necessary)
+		int maxLineLen;  ///< Maximum length of a single line (will expand as necessary)
 
-		iconv_t cd;
+		iconv_t cd;      ///< iconv handle
 
 // Colour pairs
 #define CLR_STATUSBAR 1
 #define CLR_CONTENT 2
-		attr_t iAttribute[3]; // attributes (bold etc.) for matching colour pairs
+		attr_t iAttribute[3]; ///< Attributes (bold etc.) for matching colour pairs
 
 	public:
 		NCursesConsole(void)

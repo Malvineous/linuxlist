@@ -253,8 +253,6 @@ void HexView::redrawLines(int iTop, int iBottom)
 	return;
 }
 
-// Display the file data (starting at the current offset) in the content
-// window.
 void HexView::drawLine(int iLine, unsigned long iOffset, const int *pData, int iLen)
 	throw ()
 {
@@ -307,10 +305,6 @@ void HexView::drawLine(int iLine, unsigned long iOffset, const int *pData, int i
 	return;
 }
 
-/// Set the size of each cell in bits.
-/**
- * When this is set to eight, a normal byte-level view will be shown.
- */
 void HexView::setBitWidth(int newWidth)
 	throw ()
 {
@@ -331,14 +325,6 @@ void HexView::setBitWidth(int newWidth)
 	return;
 }
 
-/// Set the bit-level offset within the cell.
-/**
- * Using eight bit bytes as an example, when this is set to zero bytes
- * will be shown as normal.  When this is set to 1, the first *bit* in
- * the file will be discarded and the following eight bits (last seven
- * bits in the first input byte, and first bit in the second input byte)
- * will appear as the first byte on the screen.
- */
 void HexView::setIntraByteOffset(int delta)
 	throw ()
 {
@@ -353,11 +339,6 @@ void HexView::setIntraByteOffset(int delta)
 	return;
 }
 
-/// Regenerate the entire content on the display.
-/**
- * This is normally only called after a change that affects the entire
- * display, e.g. a change in the number of bits shown per byte.
- */
 void HexView::redrawScreen()
 	throw ()
 {
@@ -380,18 +361,6 @@ void HexView::redrawScreen()
 	return;
 }
 
-/// Increase or decrease the line width.
-/**
- * This adjusts how long each line of hex data is.
- *
- * @param delta
- *   Amount of change, -1 will shorten the row by one byte, +1 will increase
- *   it by one byte.
- *
- * @post If the value is within range, the screen is redrawn using the new
- *   width.  If the value would have moved the width out of range, nothing
- *   will be changed or redrawn.
- */
 void HexView::adjustLineWidth(int delta)
 	throw ()
 {
