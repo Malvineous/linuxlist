@@ -86,6 +86,9 @@ class NCursesConsole: virtual public IConsole
 		void eraseToEOL(void)
 			throw ();
 
+		void cursor(bool visible)
+			throw ();
+
 };
 
 #endif // NCURSESCONSOLE_HPP_

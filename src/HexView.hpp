@@ -45,6 +45,16 @@ class HexView: virtual public IView
 	int iLineAlloc;           ///< Size of pLineBuffer in bytes (may be > iLineWidth)
 	int bitWidth;             ///< Number of bits in each char/cell
 	int intraByteOffset;      ///< Bit-level seek offset within cell (0..bitWidth-1)
+	unsigned int cursorOffset;///< Cursor position (in bytes) relative to iOffset
+	int hexEditOffset;        ///< Offset (in on-screen chars) within byte in hex edit mode
+
+	enum EditMode {
+		View,       ///< Viewing data (default)
+		HexEdit,    ///< Editing hex values
+		BinaryEdit, ///< Editing binary data
+	};
+	#define NUM_EDIT_MODES 3  ///< Number of entries in EditMode
+	EditMode editMode; ///< Current editing mode
 
 	std::fstream::off_type iOffset; // Offset into file of first character in content window
 	std::fstream::off_type iFileSize;
@@ -141,6 +151,10 @@ class HexView: virtual public IView
 		void redrawScreen()
 			throw ();
 
+		/// Update the top status bar with the current offset etc.
+		void updateHeader()
+			throw ();
+
 		/// Increase or decrease the line width.
 		/**
 		 * This adjusts how long each line of hex data is.
@@ -154,6 +168,53 @@ class HexView: virtual public IView
 		 *   will be changed or redrawn.
 		 */
 		void adjustLineWidth(int delta)
+			throw ();
+
+		/// Cycle between edit modes.
+		void cycleEditMode()
+			throw ();
+
+		/// Move the text cursor to its correct location.
+		/**
+		 * This function is used after this->cursorOffset has been changed, to move
+		 * the cursor to the new location.
+		 */
+		void updateCursorPos()
+			throw ();
+
+		/// Show/hide text cursor.
+		/**
+		 * @param visible
+		 *   true to show, false to hide.
+		 *
+		 * @note Returns cursor to last location before showing, and is a no-op
+		 *   when in view mode (cursor is always hidden then)
+		 */
+		void showCursor(bool visible)
+			throw ();
+
+		/// Move the cursor position by the given amount.
+		/**
+		 * @param delta
+		 *   Number of bytes to move the cursor.  -1 is back one byte,
+		 *   +this->iLineWidth is down one line, etc.
+		 *
+		 * @note The value is clipped to the allowable range, however this function
+		 *   may call the scroll functions, e.g. if the function is used to try to
+		 *   move past the end of the screen, the cursor will stay put but more
+		 *   data will scroll into place.
+		 */
+		void moveCursor(int delta)
+			throw ();
+
+		/// Write the given value into the file at the current cursor offset.
+		/**
+		 * @param byte
+		 *   Byte to write.  Can be > 8-bits if the current cell width is wide.
+		 *
+		 * @post Underlying file has been changed.  Screen is not updated.
+		 */
+		void writeByteAtCursor(unsigned int byte)
 			throw ();
 
 };

@@ -32,6 +32,8 @@ enum Key {
 	Key_PageDown,
 	Key_Home,
 	Key_End,
+	Key_Esc,
+	Key_Tab,
 };
 
 /// Something to display on the screen (file content, directory browser, etc.)

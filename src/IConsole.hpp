@@ -134,6 +134,14 @@ class IConsole
 		virtual void eraseToEOL()
 			throw () = 0;
 
+		/// Show or hide the text cursor.
+		/**
+		 * @param visible
+		 *   true to show the cursor at the current X,Y location, false to hide it.
+		 */
+		virtual void cursor(bool visible)
+			throw () = 0;
+
 };
 
 #endif // ICONSOLE_HPP_

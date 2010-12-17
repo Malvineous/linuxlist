@@ -151,17 +151,25 @@ void NCursesConsole::mainLoop(IView *pView)
 	Key c;
 	do {
 		c = (Key)getch();
-		// Convert platform-specific keys into generic keys
-		switch (c) {
-			case KEY_UP:    c = Key_Up; break;
-			case KEY_DOWN:  c = Key_Down; break;
-			case KEY_LEFT:  c = Key_Left; break;
-			case KEY_RIGHT: c = Key_Right; break;
-			case KEY_PPAGE: c = Key_PageUp; break;
-			case KEY_NPAGE: c = Key_PageDown; break;
-			case KEY_HOME:  c = Key_Home; break;
-			case KEY_END:   c = Key_End; break;
-			default: break; // TODO: ignore unknown key to avoid clash
+		if (c & KEY_CODE_YES) {
+			// Convert platform-specific keys into generic keys
+			switch (c) {
+				case KEY_UP:    c = Key_Up; break;
+				case KEY_DOWN:  c = Key_Down; break;
+				case KEY_LEFT:  c = Key_Left; break;
+				case KEY_RIGHT: c = Key_Right; break;
+				case KEY_PPAGE: c = Key_PageUp; break;
+				case KEY_NPAGE: c = Key_PageDown; break;
+				case KEY_HOME:  c = Key_Home; break;
+				case KEY_END:   c = Key_End; break;
+				default: continue; // ignore unknown key
+			}
+		} else {
+			switch (c) {
+				case 9:  c = Key_Tab; break;
+				case 27: c = Key_Esc; break;
+				default: break; // allow unknown key through as ASCII
+			}
 		}
 	} while (pView->processKey(c));
 
@@ -268,5 +276,12 @@ void NCursesConsole::eraseToEOL(void)
 	throw ()
 {
 	wclrtoeol(this->winContent);
+	return;
+}
+
+void NCursesConsole::cursor(bool visible)
+	throw ()
+{
+	curs_set(visible ? 1 : 0);
 	return;
 }
