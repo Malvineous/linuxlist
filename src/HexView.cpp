@@ -97,8 +97,8 @@ bool HexView::processKey(Key c)
 
 			if (val >= 0) {
 				// Write this keypress into the data
-				this->writeByteAtCursor(val);
 				int y = this->cursorOffset / this->iLineWidth;
+				this->writeByteAtCursor(val);
 				this->redrawLines(y, y+1);
 			}
 			break;
@@ -106,8 +106,8 @@ bool HexView::processKey(Key c)
 		case BinaryEdit:
 			if (c < 256) {
 				// Write this keypress into the data
-				this->writeByteAtCursor(c);
 				int y = this->cursorOffset / this->iLineWidth;
+				this->writeByteAtCursor(c);
 				this->redrawLines(y, y+1);
 			}
 			break;
