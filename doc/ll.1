@@ -1,0 +1,39 @@
+.\" t
+.de TQ
+.  br
+.  ns
+.  TP \\$1
+..
+.TH LL "1" "December 2010" "Linux List" "User Commands"
+.SH NAME
+ll \- file viewer and hex editor
+.SH SYNOPSIS
+.B ll
+\fIfile\fR
+.SH DESCRIPTION
+.PP
+Linux List is a Linux version of the popular DOS "List" program.  Its main
+points are full 8-bit output with UTF-8 terminals, so that binary files look
+like they did under DOS.  Currently only the hex view has been implemented,
+but unlike the original List this is also a hex editor.
+.SH NOTES
+.PP
+Press F1 for help and key mappings.
+.PP
+Exit status is 0 on success, 1 on failure.
+.SH KNOWN ISSUES
+.PP
+Large files (> 4GB) are untested and may throw off the cursor position when
+editing files in the hex view.
+.SH AUTHOR
+Written by Adam Nielsen <malvineous@shikadi.net>.
+.SH "REPORTING BUGS"
+Report bugs to <malvineous@shikadi.net>.
+.SH COPYRIGHT
+Copyright \(co 2010 Adam Nielsen.
+License GPLv3+: GNU GPL version 3 or later <http://gnu.org/licenses/gpl.html>
+.br
+This is free software: you are free to change and redistribute it.
+There is NO WARRANTY, to the extent permitted by law.
+.SH "SEE ALSO"
+<http://www.shikadi.net/ll>
