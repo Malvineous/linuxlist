@@ -1,0 +1,13 @@
+Planned features:
+
+ - Search ('/' key)
+ - Enable/disable word wrap ('w' key)
+ - Go to line function in text view
+ - Keys to change colours
+ - Save colours and current view (text/hex) to a config file
+ - Set start and stop point in hex view to extract a block of data and save to a file
+
+Long term possible features:
+
+ - Insert/remove data in hex view (affecting file size)
+ - Implement DOS List's file selector?

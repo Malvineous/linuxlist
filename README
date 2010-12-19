@@ -3,7 +3,7 @@ Copyright 2009-2010 Adam Nielsen <malvineous@shikadi.net>
 http://www.shikadi.net/ll
 
 This program is still very early in development, so there is still much to
-implement before it even comes close to the usefulness of the original List.
+implement before it becomes as useful as the original List.
 
 Features:
 
@@ -13,6 +13,8 @@ Features:
  * Adjustable byte size.  Viewing data as nine-bits per "byte" helps
    considerably when examining LZW-compressed data.  Both big and little
    endian splitting is supported.
+
+ * Hex view supports hex editing (via byte values and direct text entry)
 
 The utility is compiled and installed in the usual way:
 
