@@ -72,6 +72,9 @@ class FileView: virtual public IView
 		~FileView()
 			throw ();
 
+		void init()
+			throw ();
+
 		/// Set an alert message on the status bar.
 		/**
 		 * @param cMsg

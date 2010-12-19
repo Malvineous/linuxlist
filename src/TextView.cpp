@@ -21,6 +21,7 @@
 #include <errno.h>
 #include "TextView.hpp"
 #include "HexView.hpp"
+#include "HelpView.hpp"
 
 /// Maximum number of lines to reach when pressing the 'end' key.  If the file
 /// has more lines than this, this is as far as the 'end' key will go.
@@ -28,10 +29,6 @@
 
 #define min(x, y) (((x) < (y)) ? (x) : (y))
 #define max(x, y) (((x) > (y)) ? (x) : (y))
-
-/// Macro to convert an uppercase ASCII letter into the ncurses key symbol for
-/// that key being pressed while holding the Control key.
-#define CTRL(k)  (k - '@')
 
 TextView::TextView(std::string strFilename, camoto::iostream_sptr data,
 	std::fstream::off_type iFileSize, IConsole *pConsole)
@@ -95,10 +92,16 @@ bool TextView::processKey(Key c)
 
 	// Global keys, always active
 	switch (c) {
-		case Key_Esc: return false;
+		case Key_Esc:
+		case Key_F10:
+		case 'q':
+			return false;
+
 		case Key_PageUp: this->scrollLines(-iHeight); break;
+
+		case Key_Enter:
 		case Key_PageDown: this->scrollLines(iHeight); break;
-		case 'q': return false;
+
 		case 'b':
 			this->setBitWidth(max(1, this->bitWidth - 1));
 			this->redrawScreen();
@@ -111,7 +114,7 @@ bool TextView::processKey(Key c)
 		case 'S': this->setIntraByteOffset(1); break;
 		case 'e': this->file.changeEndian(camoto::bitstream::littleEndian); this->redrawScreen(); break;
 		case 'E': this->file.changeEndian(camoto::bitstream::bigEndian); this->redrawScreen(); break;
-		case 'h': {
+		case ALT('h'): {
 			IViewPtr newView(new HexView(*this));
 			this->pConsole->setView(newView);
 			break;
@@ -140,6 +143,11 @@ bool TextView::processKey(Key c)
 				this->line = target;
 				this->redrawScreen();
 			}
+			break;
+		}
+		case Key_F1: {
+			IViewPtr newView(new HelpView(shared_from_this(), this->pConsole));
+			this->pConsole->setView(newView);
 			break;
 		}
 		default: break;
@@ -296,6 +304,7 @@ void TextView::redrawLines(int iTop, int iBottom, int width)
 
 			this->pConsole->gotoxy(0, y);
 
+			int prev = -1;
 			int x;
 			for (x = 0; (x < width) && !eof; x++) {
 				int c;
@@ -306,16 +315,34 @@ void TextView::redrawLines(int iTop, int iBottom, int width)
 				}
 				off++;
 
-				if ((c == 0) || (c == '\r')) {
+				if (c == 0) {
 					this->pLineBuffer[x] = ' ';
+				} else if (c == '\r') {
+					// Allow a preceding null character to escape this one
+					if (prev == 0) {
+						this->pLineBuffer[--x] = c;
+					} else {
+						this->pLineBuffer[x] = ' ';
+					}
 				} else if (c == '\n') {
 					// EOL
-					break;
+
+					// Allow a preceding null character to escape this one.  This allows
+					// the ASCII table in the help text to display all 256 chars,
+					// hopefully without causing any text files to mis-display (since
+					// they shouldn't have any nulls in them at all.)
+					// Allow a preceding null character to escape this one
+					if (prev == 0) {
+						this->pLineBuffer[--x] = c;
+					} else {
+						break;
+					}
 				} else if (c > 255) {
 					this->pLineBuffer[x] = '.'; // TODO: some non-ASCII char
 				} else {
 					this->pLineBuffer[x] = c;
 				}
+				prev = c;
 			}
 
 			this->pLineBuffer[x] = 0; // force EOL
@@ -364,6 +391,7 @@ void TextView::cacheLines(int maxLine, int width)
 
 		int off = 0;
 		bool eof = false;
+		int prev = -1;
 		for (int i = cachedLines; (i <= maxLine) && !eof; i++) {
 			for (int x = 0; x < width; x++) {
 				int c;
@@ -373,7 +401,11 @@ void TextView::cacheLines(int maxLine, int width)
 					break;
 				}
 				off++;
-				if (c == '\n') break;
+				if ((c == '\n') && (prev != 0)) {
+					prev = c;
+					break;
+				}
+				prev = c;
 			}
 			if (!eof) this->linePos.push_back(lastOffset + off * this->bitWidth);
 		}

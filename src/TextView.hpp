@@ -32,14 +32,15 @@
 #include "FileView.hpp"
 
 /// Text view.
-class TextView: virtual public FileView
+class TextView: public FileView
 {
-	uint8_t *pLineBuffer;     ///< Line buffer, initially 80 chars
-	int iLineAlloc;           ///< Size of pLineBuffer in bytes (may be > iLineWidth)
+	protected:
+		uint8_t *pLineBuffer;     ///< Line buffer, initially 80 chars
+		int iLineAlloc;           ///< Size of pLineBuffer in bytes (may be > iLineWidth)
 
-	int line;                 ///< Current line at top of screen, 0 == first line
-	std::vector<int> linePos; ///< List of offsets where each line begins
-	bool cacheComplete;       ///< True if linePos covers the entire file
+		int line;                 ///< Current line at top of screen, 0 == first line
+		std::vector<int> linePos; ///< List of offsets where each line begins
+		bool cacheComplete;       ///< True if linePos covers the entire file
 
 
 	public:

@@ -163,10 +163,12 @@ void NCursesConsole::mainLoop()
 {
 	assert(this->nextView);
 	Key c;
+	bool escape = false; // was last keypress ESC?
 	do {
 		if (this->nextView) {
 			this->pView = this->nextView;
 			this->nextView.reset();
+			this->pView->init();
 			this->pView->redrawScreen();
 			this->update();
 		}
@@ -183,13 +185,23 @@ void NCursesConsole::mainLoop()
 				case KEY_NPAGE: c = Key_PageDown; break;
 				case KEY_HOME:  c = Key_Home; break;
 				case KEY_END:   c = Key_End; break;
+				case KEY_F(1):  c = Key_F1; break;
+				case KEY_F(10): c = Key_F10; break;
 				default: continue; // ignore unknown key
 			}
+			escape = false;
 		} else {
-			switch (c) {
-				case 9:  c = Key_Tab; break;
-				case 27: c = Key_Esc; break;
-				default: break; // allow unknown key through as ASCII
+			if (escape) {
+				escape = false;
+				if ((c >= 'a') && (c <= 'z')) c = (Key)(Key_Alt | c);
+				else if (c == 27) c = Key_Esc;
+			} else {
+				switch (c) {
+					case 9:  c = Key_Tab; break;
+					case 13: c = Key_Enter; break;
+					case 27: c = Key_None; escape = true; break;
+					default: break; // allow unknown key through as ASCII
+				}
 			}
 		}
 	} while (this->pView->processKey(c));

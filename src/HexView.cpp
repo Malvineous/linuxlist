@@ -21,6 +21,7 @@
 #include <errno.h>
 #include "HexView.hpp"
 #include "TextView.hpp"
+#include "HelpView.hpp"
 
 #define min(x, y) (((x) < (y)) ? (x) : (y))
 #define max(x, y) (((x) > (y)) ? (x) : (y))
@@ -78,11 +79,18 @@ bool HexView::processKey(Key c)
 
 	// Global keys, always active
 	switch (c) {
-		case Key_Esc: return false;
+		case Key_Esc:
+		case Key_F10:
+			return false;
 		case Key_Tab: this->cycleEditMode(); break;
 		case Key_PageUp: this->scrollRel(-this->iLineWidth*iHeight); break;
 		case Key_PageDown: this->scrollRel(this->iLineWidth*iHeight); break;
 		case CTRL('L'): this->redrawScreen(); break;
+		case Key_F1: {
+			IViewPtr newView(new HelpView(shared_from_this(), this->pConsole));
+			this->pConsole->setView(newView);
+			break;
+		}
 	}
 
 	// Keys for both edit views
@@ -147,7 +155,7 @@ bool HexView::processKey(Key c)
 				case 'e': this->file.changeEndian(camoto::bitstream::littleEndian); this->redrawScreen(); break;
 				case 'E': this->file.changeEndian(camoto::bitstream::bigEndian); this->redrawScreen(); break;
 				case 'g': this->gotoOffset(); break;
-				case 'h': {
+				case ALT('h'): {
 					this->file.flush();
 					IViewPtr newView(new TextView(*this));
 					this->pConsole->setView(newView);

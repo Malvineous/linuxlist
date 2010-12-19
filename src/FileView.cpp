@@ -32,10 +32,6 @@ FileView::FileView(std::string strFilename, camoto::iostream_sptr data,
 		iOffset(0),
 		iFileSize(iFileSize)
 {
-	this->pConsole->clearStatusBar(SB_TOP);
-	this->pConsole->clearStatusBar(SB_BOTTOM);
-	this->pConsole->setStatusBar(SB_TOP, SB_LEFT, strFilename);
-	this->statusAlert(NULL); // draw the bottom status bar with no alert
 }
 
 FileView::FileView(const FileView& parent)
@@ -49,15 +45,21 @@ FileView::FileView(const FileView& parent)
 		iOffset(parent.iOffset),
 		iFileSize(parent.iFileSize)
 {
-	this->pConsole->clearStatusBar(SB_TOP);
-	this->pConsole->clearStatusBar(SB_BOTTOM);
-	this->pConsole->setStatusBar(SB_TOP, SB_LEFT, strFilename);
-	this->statusAlert(NULL); // draw the bottom status bar with no alert
 }
 
 FileView::~FileView()
 	throw ()
 {
+}
+
+void FileView::init()
+	throw ()
+{
+	this->pConsole->clearStatusBar(SB_TOP);
+	//this->pConsole->clearStatusBar(SB_BOTTOM);
+	this->pConsole->setStatusBar(SB_TOP, SB_LEFT, this->strFilename);
+	this->bStatusAlertVisible = true; // force redraw
+	this->statusAlert(NULL); // draw the bottom status bar with no alert
 }
 
 void FileView::statusAlert(const char *cMsg)

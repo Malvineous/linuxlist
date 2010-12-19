@@ -27,7 +27,7 @@
 #include "FileView.hpp"
 
 /// Hex editor view.
-class HexView: virtual public FileView
+class HexView: public FileView
 {
 	int iLineWidth;           ///< Size of line shown to user, initially 16 chars
 	int *pLineBuffer;         ///< Line buffer, initially 16 chars
