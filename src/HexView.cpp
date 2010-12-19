@@ -122,6 +122,7 @@ bool HexView::processKey(Key c)
 				case 'S': this->setIntraByteOffset(1); break;
 				case 'e': this->file.changeEndian(camoto::bitstream::littleEndian); this->redrawScreen(); break;
 				case 'E': this->file.changeEndian(camoto::bitstream::bigEndian); this->redrawScreen(); break;
+				case 'g': this->gotoOffset(); break;
 				case Key_Up: this->scrollRel(-this->iLineWidth); break;
 				case Key_Down: this->scrollRel(this->iLineWidth); break;
 				case Key_Left: this->scrollRel(-1); break;
@@ -604,5 +605,33 @@ void HexView::writeByteAtCursor(unsigned int byte)
 	} else {
 		this->moveCursor(1);
 	}
+	return;
+}
+
+void HexView::gotoOffset()
+	throw ()
+{
+	std::string val = this->pConsole->getString("Offset", 15);
+
+	// Reset status bar to hide prompt
+	this->bStatusAlertVisible = true;
+	this->statusAlert(NULL);
+
+	// Get value and scroll if ok
+	const char *nptr = val.c_str();
+	char *endptr;
+	unsigned long off = strtoul(nptr, &endptr, 0);
+	if (
+		(endptr != nptr) &&  // if text was entered, and
+		(*endptr  == '\0')   // it was all valid
+	) {
+		// Perform the jump
+		this->scrollAbs(off);
+	}
+
+	// The cursor is turned on for the prompt, then turned off afterwards, so
+	// now set it back to the correct state for the current edit mode.
+	this->showCursor(true);
+
 	return;
 }

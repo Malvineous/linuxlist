@@ -25,6 +25,11 @@
 #include "cfg.hpp"
 #include "NCursesConsole.hpp"
 
+// Not sure why these aren't defined elsewhere...is this even portable??
+#define NC_KEY_ENTER1 '\r'
+#define NC_KEY_ENTER2 '\n'
+#define NC_KEY_BACKSPACE 0x7F
+
 static const int cgaColours[] = {COLOR_BLACK, COLOR_BLUE, COLOR_GREEN,
 	COLOR_CYAN, COLOR_RED, COLOR_MAGENTA, COLOR_YELLOW, COLOR_WHITE
 };
@@ -284,4 +289,41 @@ void NCursesConsole::cursor(bool visible)
 {
 	curs_set(visible ? 1 : 0);
 	return;
+}
+
+std::string NCursesConsole::getString(const std::string& strPrompt, int maxLen)
+	throw ()
+{
+	wmove(this->winStatus[SB_BOTTOM], 0, 0);
+	waddstr(this->winStatus[SB_BOTTOM], strPrompt.c_str());
+	waddstr(this->winStatus[SB_BOTTOM], "> ");
+	wclrtoeol(this->winStatus[SB_BOTTOM]);
+	std::string s;
+	char c;
+	curs_set(1);
+	for (;;) {
+		c = wgetch(this->winStatus[SB_BOTTOM]);
+		if ((c == NC_KEY_ENTER1) || (c == NC_KEY_ENTER2)) break;
+		if (c == NC_KEY_BACKSPACE) {
+			if (s.length()) {
+				int len = s.length() - 1;
+				s = s.substr(0, len);
+				len += strPrompt.length() + 2;
+				wmove(this->winStatus[SB_BOTTOM], 0, len);
+				wechochar(this->winStatus[SB_BOTTOM], ' ');
+				wmove(this->winStatus[SB_BOTTOM], 0, len);
+			}
+			continue;
+		}
+		if (c & KEY_CODE_YES) continue; // ignore special keys
+
+		if (s.length() < maxLen) {
+			s += c;
+			wechochar(this->winStatus[SB_BOTTOM], c);
+		}
+		//printf("%02X\n", c);
+		//wnoutrefresh(this->winStatus[SB_BOTTOM]);
+	}
+	curs_set(0);
+	return s;
 }

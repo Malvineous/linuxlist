@@ -142,6 +142,23 @@ class IConsole
 		virtual void cursor(bool visible)
 			throw () = 0;
 
+		/// Read in a string from the user.
+		/**
+		 * A message is displayed on the status bar, followed by the characters the
+		 * user is typing, up to a maximum of maxLen chars.
+		 *
+		 * @param strPrompt
+		 *   Text to display in status bar before user input appears.
+		 *
+		 * @param maxLen
+		 *   Maximum length of the string, not including the terminating NULL.
+		 *
+		 * @return The string entered by the user, or an empty string if the user
+		 *   pressed Escape to abort.
+		 */
+		virtual std::string getString(const std::string& strPrompt, int maxLen)
+			throw () = 0;
+
 };
 
 #endif // ICONSOLE_HPP_

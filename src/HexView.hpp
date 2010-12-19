@@ -217,6 +217,10 @@ class HexView: virtual public IView
 		void writeByteAtCursor(unsigned int byte)
 			throw ();
 
+		/// Prompt the user for an offset, then jump there.
+		void gotoOffset()
+			throw ();
+
 };
 
 #endif // HEXVIEW_HPP_

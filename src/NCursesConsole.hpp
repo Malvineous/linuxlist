@@ -89,6 +89,9 @@ class NCursesConsole: virtual public IConsole
 		void cursor(bool visible)
 			throw ();
 
+		std::string getString(const std::string& strPrompt, int maxLen)
+			throw ();
+
 };
 
 #endif // NCURSESCONSOLE_HPP_
