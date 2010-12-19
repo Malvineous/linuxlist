@@ -49,6 +49,15 @@ class IView
 		 */
 		virtual bool processKey(Key c)
 			throw () = 0;
+
+		/// Regenerate the entire content on the display.
+		/**
+		 * This is normally only called after a change that affects the entire
+		 * display, e.g. a change in the number of bits shown per byte.
+		 */
+		virtual void redrawScreen()
+			throw () = 0;
+
 };
 
 #endif // IVIEW_HPP_

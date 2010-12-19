@@ -18,42 +18,51 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <errno.h>
 #include "HexView.hpp"
+#include "TextView.hpp"
+
+#define min(x, y) (((x) < (y)) ? (x) : (y))
+#define max(x, y) (((x) > (y)) ? (x) : (y))
 
 /// Number of chars wide each num is (e.g. 9-bit nums are three chars wide)
 #define CALC_HEXCELL_WIDTH ((this->bitWidth + 3) / 4)
 
-HexView::HexView(std::string strFilename, camoto::iostream_sptr file,
+/// Macro to convert an uppercase ASCII letter into the ncurses key symbol for
+/// that key being pressed while holding the Control key.
+#define CTRL(k)  (k - '@')
+
+HexView::HexView(std::string strFilename, camoto::iostream_sptr data,
 	std::fstream::off_type iFileSize, IConsole *pConsole)
 	throw () :
-		strFilename(strFilename),
-		file(file, camoto::bitstream::littleEndian),
-		pConsole(pConsole),
-		bStatusAlertVisible(true), // trigger an update when next set
+		FileView(strFilename, data, iFileSize, pConsole),
 		iLineWidth(16),
 		iLineAlloc(16),
 		pLineBuffer(NULL),
-		bitWidth(8),
-		intraByteOffset(0),
 		cursorOffset(0),
 		editMode(View),
-		hexEditOffset(0),
-		iOffset(0),
-		iFileSize(iFileSize)
+		hexEditOffset(0)
 {
-	// Draw the first page of data
-	this->pConsole->setStatusBar(SB_TOP, SB_LEFT, strFilename);
-	this->statusAlert(NULL); // draw the bottom status bar with no alert
+	this->pLineBuffer = new int[this->iLineAlloc];
+}
 
-	this->pLineBuffer = new int[this->iLineWidth];
-
-	this->redrawScreen();
-	this->pConsole->update();
+HexView::HexView(const FileView& parent)
+	throw () :
+		FileView(parent),
+		iLineWidth(16),
+		iLineAlloc(16),
+		pLineBuffer(NULL),
+		cursorOffset(0),
+		editMode(View),
+		hexEditOffset(0)
+{
+	this->pLineBuffer = new int[this->iLineAlloc];
 }
 
 HexView::~HexView()
 	throw ()
 {
+	this->file.flush();
 	assert(this->pLineBuffer != NULL);
 	delete[] this->pLineBuffer;
 }
@@ -73,6 +82,7 @@ bool HexView::processKey(Key c)
 		case Key_Tab: this->cycleEditMode(); break;
 		case Key_PageUp: this->scrollRel(-this->iLineWidth*iHeight); break;
 		case Key_PageDown: this->scrollRel(this->iLineWidth*iHeight); break;
+		case CTRL('L'): this->redrawScreen(); break;
 	}
 
 	// Keys for both edit views
@@ -116,13 +126,31 @@ bool HexView::processKey(Key c)
 				case 'q': return false;
 				case '-': this->adjustLineWidth(-1); break;
 				case '+': this->adjustLineWidth(+1); break;
-				case 'b': this->setBitWidth(max(1, this->bitWidth - 1)); break;
-				case 'B': this->setBitWidth(min(sizeof(int)*8, this->bitWidth + 1)); break;
+				case 'b':
+					this->setBitWidth(max(1, this->bitWidth - 1));
+
+					// Make sure the data hasn't gone off the edge of the screen
+					this->adjustLineWidth(0);
+
+					this->redrawScreen();
+					break;
+				case 'B':
+					this->setBitWidth(min(sizeof(int)*8, this->bitWidth + 1));
+
+					// Make sure the data hasn't gone off the edge of the screen
+					this->adjustLineWidth(0);
+
+					this->redrawScreen();
+					break;
 				case 's': this->setIntraByteOffset(-1); break;
 				case 'S': this->setIntraByteOffset(1); break;
 				case 'e': this->file.changeEndian(camoto::bitstream::littleEndian); this->redrawScreen(); break;
 				case 'E': this->file.changeEndian(camoto::bitstream::bigEndian); this->redrawScreen(); break;
 				case 'g': this->gotoOffset(); break;
+				case 'h':
+					this->file.flush();
+					this->pConsole->setView(new TextView(*this));
+					break;
 				case Key_Up: this->scrollRel(-this->iLineWidth); break;
 				case Key_Down: this->scrollRel(this->iLineWidth); break;
 				case Key_Left: this->scrollRel(-1); break;
@@ -144,26 +172,26 @@ bool HexView::processKey(Key c)
 	return true; // true == keep going (don't quit)
 }
 
-// Set an alert message on the status bar, or remove one if cMsg == NULL
-void HexView::statusAlert(const char *cMsg)
+void HexView::redrawScreen()
 	throw ()
 {
-	// If there's no status message and a blank has been requested, do nothing.
-	if ((!cMsg) && (!bStatusAlertVisible)) return;
+	int iWidth, iHeight;
+	this->pConsole->getContentDims(&iWidth, &iHeight);
+	this->showCursor(false);
 
-	// Blank out the bottom statusbar to hide the old status message
-	this->pConsole->clearStatusBar(SB_BOTTOM);
+	this->updateHeader();
+	this->redrawLines(0, iHeight);
 
-	// Reset the right-hand side after we've blanked it
-	this->pConsole->setStatusBar(SB_BOTTOM, SB_RIGHT, "F1=help");
+	this->showCursor(true);
+	return;
+}
 
-	if (cMsg) {
-		this->pConsole->setStatusBar(SB_BOTTOM, SB_LEFT, std::string("Command>  *** ") + cMsg + " *** ");
-		bStatusAlertVisible = true;
-	} else {
-		this->pConsole->setStatusBar(SB_BOTTOM, SB_LEFT, "Command> ");
-		bStatusAlertVisible = false;
-	}
+void HexView::generateHeader(std::ostringstream& ss)
+	throw ()
+{
+	this->FileView::generateHeader(ss);
+	// Append our own text onto the end
+	ss << "  Width: " << this->iLineWidth;
 	return;
 }
 
@@ -358,71 +386,6 @@ void HexView::drawLine(int iLine, unsigned long iOffset, const int *pData, int i
 	return;
 }
 
-void HexView::setBitWidth(int newWidth)
-	throw ()
-{
-	// Since the first bit on the screen should stay the same after
-	// this change, we need to adjust offsets.
-	int bitOffset = this->iOffset * this->bitWidth + this->intraByteOffset;
-
-	this->bitWidth = newWidth;
-	this->intraByteOffset = bitOffset % this->bitWidth;
-	this->iOffset = bitOffset / this->bitWidth;
-
-	assert(bitOffset == this->iOffset * this->bitWidth + this->intraByteOffset);
-
-	// Make sure the data hasn't gone off the edge of the screen
-	this->adjustLineWidth(0);
-
-	this->redrawScreen();
-	return;
-}
-
-void HexView::setIntraByteOffset(int delta)
-	throw ()
-{
-	if ((this->intraByteOffset + delta) >= this->bitWidth) {
-		this->iOffset++;
-	} else if ((this->intraByteOffset + delta) < 0) {
-		if (this->iOffset > 0) this->iOffset--;
-		else return; // can't go past start of file
-	}
-	this->intraByteOffset = (this->intraByteOffset + this->bitWidth + delta) % this->bitWidth;
-	this->redrawScreen();
-	return;
-}
-
-void HexView::redrawScreen()
-	throw ()
-{
-	int iWidth, iHeight;
-	this->pConsole->getContentDims(&iWidth, &iHeight);
-	this->showCursor(false);
-
-	this->updateHeader();
-	this->redrawLines(0, iHeight);
-
-	this->showCursor(true);
-	return;
-}
-
-void HexView::updateHeader()
-	throw ()
-{
-	std::ostringstream ss;
-	ss << "Offset: " << this->iOffset << '+' << this->intraByteOffset
-		<< "b  Cell size: " << this->bitWidth
-		<< "b/";
-	if (this->file.getEndian() == camoto::bitstream::littleEndian) {
-		ss << "LE";
-	} else {
-		ss << "BE";
-	}
-	ss << "  Width: " << this->iLineWidth;
-	this->pConsole->setStatusBar(SB_TOP, SB_RIGHT, ss.str());
-	return;
-}
-
 void HexView::adjustLineWidth(int delta)
 	throw ()
 {
@@ -576,13 +539,14 @@ void HexView::writeByteAtCursor(unsigned int byte)
 	throw ()
 {
 	std::fstream::off_type iCurOffset = this->iOffset + this->cursorOffset;
-	file.clear(); // clear any errors (e.g. reaching EOF previously)
+	this->file.clear(); // clear any errors (e.g. reaching EOF previously)
 	int dest = iCurOffset * this->bitWidth + this->intraByteOffset;
 	switch (this->editMode) {
 		case HexEdit: {
-			file.seek(dest, std::ios::beg);
+			// TODO: Just make use of the bitstream functions to handle all this!
+			this->file.seek(dest, std::ios::beg);
 			int cur;
-			if (!file.read(this->bitWidth, &cur)) {
+			if (!this->file.read(this->bitWidth, &cur)) {
 				this->statusAlert("Read error getting byte to update :-(");
 				return;
 			}
@@ -599,8 +563,8 @@ void HexView::writeByteAtCursor(unsigned int byte)
 			break;
 		}
 	}
-	file.seek(dest, std::ios::beg);
-	if (!file.write(this->bitWidth, byte)) {
+	this->file.seek(dest, std::ios::beg);
+	if (!this->file.write(this->bitWidth, byte)) {
 		this->statusAlert("Write error :-(");
 	} else {
 		this->moveCursor(1);

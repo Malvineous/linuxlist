@@ -38,6 +38,9 @@
 class NCursesConsole: virtual public IConsole
 {
 	private:
+		IView *pView;         ///< Current view in use
+		IView *nextView;      ///< If non-NULL, next view to replace pView
+
 		// The status bars need to be separate windows, otherwise updating them
 		// will overwrite the content window!
 		WINDOW *winStatus[2]; ///< Status bars (0 == top, 1 == bottom)
@@ -59,7 +62,10 @@ class NCursesConsole: virtual public IConsole
 		~NCursesConsole()
 			throw ();
 
-		void mainLoop(IView *pView)
+		void setView(IView *pView)
+			throw ();
+
+		void mainLoop()
 			throw ();
 
 		void update(void)

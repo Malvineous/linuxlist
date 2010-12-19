@@ -20,6 +20,7 @@
 
 #include <string.h> // strerror()
 #include <errno.h>
+#include <cassert>
 #include <iostream> // for errors before we get to nCurses
 
 #include "cfg.hpp"
@@ -72,6 +73,8 @@ wchar_t ctl_utf8[] = {
 
 NCursesConsole::NCursesConsole(void)
 	throw () :
+		pView(NULL),
+		nextView(NULL),
 		maxLineLen(80)
 {
 	// Init iconv
@@ -142,6 +145,12 @@ NCursesConsole::NCursesConsole(void)
 NCursesConsole::~NCursesConsole()
 	throw ()
 {
+	// It shouldn't be possible to quit right in the middle of a view change.
+	assert(this->nextView == NULL);
+	assert(this->pView);
+
+	delete this->pView;
+
 	delwin(this->winContent);
 
 	// Restore the terminal
@@ -150,11 +159,27 @@ NCursesConsole::~NCursesConsole()
 	iconv_close(this->cd);
 }
 
-void NCursesConsole::mainLoop(IView *pView)
+void NCursesConsole::setView(IView *pView)
 	throw ()
 {
+	this->nextView = pView;
+	return;
+}
+
+void NCursesConsole::mainLoop()
+	throw ()
+{
+	assert(this->nextView);
 	Key c;
 	do {
+		if (this->nextView) {
+			if (this->pView) delete this->pView;
+			this->pView = this->nextView;
+			this->nextView = NULL;
+			this->pView->redrawScreen();
+			this->update();
+		}
+
 		c = (Key)getch();
 		if (c & KEY_CODE_YES) {
 			// Convert platform-specific keys into generic keys
@@ -176,7 +201,7 @@ void NCursesConsole::mainLoop(IView *pView)
 				default: break; // allow unknown key through as ASCII
 			}
 		}
-	} while (pView->processKey(c));
+	} while (this->pView->processKey(c));
 
 	return;
 }

@@ -23,28 +23,15 @@
 
 #include <config.h>
 
-#include <fstream>
-#include <sstream>
 #include <iomanip>
-#include <camoto/bitstream.hpp>
-#include "IConsole.hpp"
-#include "IView.hpp"
-
-#define min(x, y) (((x) < (y)) ? (x) : (y))
-#define max(x, y) (((x) > (y)) ? (x) : (y))
+#include "FileView.hpp"
 
 /// Hex editor view.
-class HexView: virtual public IView
+class HexView: virtual public FileView
 {
-	std::string strFilename;  ///< Filename of open file
-	camoto::bitstream file;   ///< Bitstream for reading data from file
-	IConsole *pConsole;       ///< Console used for drawing content
-	bool bStatusAlertVisible; ///< true if an alert is visible in the status bar
 	int iLineWidth;           ///< Size of line shown to user, initially 16 chars
 	int *pLineBuffer;         ///< Line buffer, initially 16 chars
 	int iLineAlloc;           ///< Size of pLineBuffer in bytes (may be > iLineWidth)
-	int bitWidth;             ///< Number of bits in each char/cell
-	int intraByteOffset;      ///< Bit-level seek offset within cell (0..bitWidth-1)
 	unsigned int cursorOffset;///< Cursor position (in bytes) relative to iOffset
 	int hexEditOffset;        ///< Offset (in on-screen chars) within byte in hex edit mode
 
@@ -56,12 +43,12 @@ class HexView: virtual public IView
 	#define NUM_EDIT_MODES 3  ///< Number of entries in EditMode
 	EditMode editMode; ///< Current editing mode
 
-	std::fstream::off_type iOffset; // Offset into file of first character in content window
-	std::fstream::off_type iFileSize;
-
 	public:
-		HexView(std::string strFilename, camoto::iostream_sptr file,
+		HexView(std::string strFilename, camoto::iostream_sptr data,
 			std::fstream::off_type iFileSize, IConsole *pConsole)
+			throw ();
+
+		HexView(const FileView& parent)
 			throw ();
 
 		~HexView()
@@ -70,12 +57,10 @@ class HexView: virtual public IView
 		bool processKey(Key c)
 			throw ();
 
-		/// Set an alert message on the status bar.
-		/**
-		 * @param cMsg
-		 *   Message to show.  If NULL, message is removed.
-		 */
-		void statusAlert(const char *cMsg)
+		void redrawScreen()
+			throw ();
+
+		void generateHeader(std::ostringstream& ss)
 			throw ();
 
 		/// Scroll to an absolute offset.
@@ -86,10 +71,10 @@ class HexView: virtual public IView
 		void scrollAbs(unsigned long iNewOffset)
 			throw ();
 
-		/// Scroll vertically by this number of lines.
+		/// Scroll by this number of chars.
 		/**
 		 * @param iDelta
-		 *   Number of lines to scroll.  -1 will scroll back one byte, +1 will
+		 *   Number of bytes to scroll.  -1 will scroll back one byte, +1 will
 		 *   scroll forward one byte.  -this->iLineWidth will scroll up one line,
 		 *   +this->iLineWidth will scroll down one line.
 		 */
@@ -123,36 +108,6 @@ class HexView: virtual public IView
 		 *   Line length/length of pData
 		 */
 		void drawLine(int iLine, unsigned long iOffset, const int *pData, int iLen)
-			throw ();
-
-		/// Set the size of each cell in bits.
-		/**
-		 * When this is set to eight, a normal byte-level view will be shown.
-		 */
-		void setBitWidth(int newWidth)
-			throw ();
-
-		/// Set the bit-level offset within the cell.
-		/**
-		 * Using eight bit bytes as an example, when this is set to zero bytes
-		 * will be shown as normal.  When this is set to 1, the first *bit* in
-		 * the file will be discarded and the following eight bits (last seven
-		 * bits in the first input byte, and first bit in the second input byte)
-		 * will appear as the first byte on the screen.
-		 */
-		void setIntraByteOffset(int delta)
-			throw ();
-
-		/// Regenerate the entire content on the display.
-		/**
-		 * This is normally only called after a change that affects the entire
-		 * display, e.g. a change in the number of bits shown per byte.
-		 */
-		void redrawScreen()
-			throw ();
-
-		/// Update the top status bar with the current offset etc.
-		void updateHeader()
 			throw ();
 
 		/// Increase or decrease the line width.

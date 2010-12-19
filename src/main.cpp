@@ -61,9 +61,9 @@ int main(int iArgC, char *cArgV[])
 
 	IView *pView = new HexView(strFilename, fsFile, iFileSize, pConsole);
 
-	pConsole->mainLoop(pView);
+	pConsole->setView(pView); // pConsole now owns pView (so we don't delete it)
+	pConsole->mainLoop();
 
-	delete pView;
 	delete pConsole;
 
 	return 0;

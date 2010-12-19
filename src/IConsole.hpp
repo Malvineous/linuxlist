@@ -46,14 +46,19 @@ class IConsole
 		{
 		}
 
-		/// Main loop for reading keystrokes and passing actions to view.
+		/// Set the view that will be shown in this console.
 		/**
 		 * @param pView
 		 *   IView to pass keypress events to.
-		 *
+		 */
+		virtual void setView(IView *pView)
+			throw () = 0;
+
+		/// Main loop for reading keystrokes and passing actions to the view.
+		/**
 		 * @return On return the application will terminate.
 		 */
-		virtual void mainLoop(IView *pView)
+		virtual void mainLoop()
 			throw () = 0;
 
 		/// Update the content area (not status bars) after changes have been made.
