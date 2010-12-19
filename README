@@ -25,3 +25,5 @@ You will need libgamecommon installed first.  If you downloaded the git
 release, run ./autogen.sh before the commands above.
 
 This program is released under the GPLv3 license.
+
+![Screenshot of hex view](http://www.shikadi.net/gfx/ll/ll-hexview.png)
