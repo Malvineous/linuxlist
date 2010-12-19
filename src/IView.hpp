@@ -21,6 +21,8 @@
 #ifndef IVIEW_HPP_
 #define IVIEW_HPP_
 
+#include <boost/shared_ptr.hpp>
+
 /// Keycode definitions.  Values < 256 are ASCII values.
 enum Key {
 	Key_None = 0,
@@ -59,5 +61,7 @@ class IView
 			throw () = 0;
 
 };
+
+typedef boost::shared_ptr<IView> IViewPtr;
 
 #endif // IVIEW_HPP_

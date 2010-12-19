@@ -59,7 +59,7 @@ int main(int iArgC, char *cArgV[])
 	fsFile->seekg(0, std::ios::end);
 	std::fstream::off_type iFileSize = fsFile->tellg();
 
-	IView *pView = new HexView(strFilename, fsFile, iFileSize, pConsole);
+	IViewPtr pView(new HexView(strFilename, fsFile, iFileSize, pConsole));
 
 	pConsole->setView(pView); // pConsole now owns pView (so we don't delete it)
 	pConsole->mainLoop();

@@ -73,8 +73,6 @@ wchar_t ctl_utf8[] = {
 
 NCursesConsole::NCursesConsole(void)
 	throw () :
-		pView(NULL),
-		nextView(NULL),
 		maxLineLen(80)
 {
 	// Init iconv
@@ -145,12 +143,6 @@ NCursesConsole::NCursesConsole(void)
 NCursesConsole::~NCursesConsole()
 	throw ()
 {
-	// It shouldn't be possible to quit right in the middle of a view change.
-	assert(this->nextView == NULL);
-	assert(this->pView);
-
-	delete this->pView;
-
 	delwin(this->winContent);
 
 	// Restore the terminal
@@ -159,7 +151,7 @@ NCursesConsole::~NCursesConsole()
 	iconv_close(this->cd);
 }
 
-void NCursesConsole::setView(IView *pView)
+void NCursesConsole::setView(IViewPtr pView)
 	throw ()
 {
 	this->nextView = pView;
@@ -173,9 +165,8 @@ void NCursesConsole::mainLoop()
 	Key c;
 	do {
 		if (this->nextView) {
-			if (this->pView) delete this->pView;
 			this->pView = this->nextView;
-			this->nextView = NULL;
+			this->nextView.reset();
 			this->pView->redrawScreen();
 			this->update();
 		}

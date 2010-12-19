@@ -51,7 +51,7 @@ class IConsole
 		 * @param pView
 		 *   IView to pass keypress events to.
 		 */
-		virtual void setView(IView *pView)
+		virtual void setView(IViewPtr pView)
 			throw () = 0;
 
 		/// Main loop for reading keystrokes and passing actions to the view.

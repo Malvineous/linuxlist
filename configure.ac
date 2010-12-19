@@ -18,6 +18,8 @@ AC_PROG_CXX
 # Checks for libraries.
 AC_PROG_LIBTOOL
 
+BOOST_REQUIRE([1.37])
+
 PKG_CHECK_MODULES([libgamecommon], [libgamecommon])
 
 AX_WITH_CURSES

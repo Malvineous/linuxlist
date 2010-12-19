@@ -147,10 +147,12 @@ bool HexView::processKey(Key c)
 				case 'e': this->file.changeEndian(camoto::bitstream::littleEndian); this->redrawScreen(); break;
 				case 'E': this->file.changeEndian(camoto::bitstream::bigEndian); this->redrawScreen(); break;
 				case 'g': this->gotoOffset(); break;
-				case 'h':
+				case 'h': {
 					this->file.flush();
-					this->pConsole->setView(new TextView(*this));
+					IViewPtr newView(new TextView(*this));
+					this->pConsole->setView(newView);
 					break;
+				}
 				case Key_Up: this->scrollRel(-this->iLineWidth); break;
 				case Key_Down: this->scrollRel(this->iLineWidth); break;
 				case Key_Left: this->scrollRel(-1); break;

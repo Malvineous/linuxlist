@@ -111,9 +111,11 @@ bool TextView::processKey(Key c)
 		case 'S': this->setIntraByteOffset(1); break;
 		case 'e': this->file.changeEndian(camoto::bitstream::littleEndian); this->redrawScreen(); break;
 		case 'E': this->file.changeEndian(camoto::bitstream::bigEndian); this->redrawScreen(); break;
-		case 'h':
-			this->pConsole->setView(new HexView(*this));
+		case 'h': {
+			IViewPtr newView(new HexView(*this));
+			this->pConsole->setView(newView);
 			break;
+		}
 		case CTRL('L'): this->redrawScreen(); break;
 		case Key_Up: this->scrollLines(-1); break;
 		case Key_Down: this->scrollLines(1); break;
