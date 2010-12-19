@@ -456,6 +456,11 @@ void HexView::cycleEditMode()
 	if (this->editMode == View) {
 		this->pConsole->cursor(false);
 	} else {
+		// Move the cursor back to the first hex byte, so it doesn't unexpectedly
+		// end up in the middle of a byte.
+		this->hexEditOffset = 0;
+
+		// Move the cursor by a zero-amount, so it ends up in the correct spot.
 		this->moveCursor(0);
 		this->showCursor(true);
 	}
