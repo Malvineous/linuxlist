@@ -168,10 +168,10 @@ bool HexView::processKey(Key c)
 				case Key_Right: this->scrollRel(1); break;
 				case Key_Home: this->scrollAbs(0); break;
 				case Key_End: {
-					int fileSizeInCells = (this->iFileSize * 8 / this->bitWidth);
-					int iLastLineLen = fileSizeInCells % this->iLineWidth;
+					unsigned long sizeInCells = (this->iFileSize << 3) / this->bitWidth;
+					int iLastLineLen = sizeInCells % this->iLineWidth;
 					if (iLastLineLen == 0) iLastLineLen = this->iLineWidth;
-					this->scrollAbs(fileSizeInCells - iLastLineLen -
+					this->scrollAbs(sizeInCells - iLastLineLen -
 						(iHeight - 1) * this->iLineWidth);
 					break;
 				}
@@ -226,6 +226,9 @@ void HexView::scrollRel(int iDelta)
 	// Check and enforce scrolling limits
 	//
 
+	// Convert the file size from bytes into whatever bitwidth we're currently using
+	unsigned long sizeInCells = (this->iFileSize << 3) / this->bitWidth;
+
 	// If the user wants to scroll up, towards the start of the file...
 	if (iDelta < 0) {
 
@@ -244,24 +247,24 @@ void HexView::scrollRel(int iDelta)
 		// The user wants to scroll down, towards the end of the file.
 
 		// Crop the scroll so that it only goes up to the last byte, not past it
-		if (this->iOffset + iDelta >= this->iFileSize) {
+		if (this->iOffset + iDelta >= sizeInCells) {
 			if (iDelta % this->iLineWidth == 0) {
 				// The user is scrolling by lines, so crop at the line level
-				unsigned long iMaxBytes = this->iFileSize - this->iOffset
+				unsigned long iMaxBytes = sizeInCells - this->iOffset
 					- (this->iLineWidth - (this->iOffset % this->iLineWidth));
 				iDelta = iMaxBytes - (iMaxBytes % this->iLineWidth);
 				if (iDelta == 0) return; // can't scroll down by a whole line without going past EOF
 			} else {
 				// The user is scrolling by chars, so allow them to go right up to
 				// the last byte.
-				iDelta = (this->iFileSize - 1) - this->iOffset;
+				iDelta = (sizeInCells - 1) - this->iOffset;
 			}
 		}
 
 	}
 
 	// If we are past EOF, display a notice to the user.
-	if (this->iOffset + iScreenSize + iDelta >= this->iFileSize) {
+	if (this->iOffset + iScreenSize + iDelta >= sizeInCells) {
 		this->statusAlert("End of file");
 	}
 
@@ -317,17 +320,20 @@ void HexView::redrawLines(int iTop, int iBottom)
 	std::fstream::off_type iCurOffset = this->iOffset + iTop * this->iLineWidth;
 	file.clear(); // clear any errors (e.g. reaching EOF previously)
 	file.seek(iCurOffset * this->bitWidth + this->intraByteOffset, std::ios::beg);
-	if (iCurOffset < this->iFileSize) {
+
+	// Convert the offset from whatever bitwidth we're currently using into bytes
+	unsigned long offsetInBytes = (iCurOffset * this->bitWidth) >> 3;
+
+	// Draw the content, unless we're past EOF
+	if (offsetInBytes < this->iFileSize) {
 		for (; y < iBottom; y++) {
 
-			// Don't read past the end of the file
 			int iRead;
-			int bytesPerLine = (this->iLineWidth * this->bitWidth) >> 3;
 			for (iRead = 0; iRead < this->iLineWidth; iRead++) {
 				if (!file.read(this->bitWidth, &this->pLineBuffer[iRead])) break;
 			}
 
-			this->drawLine(y, iOffset + y * bytesPerLine,
+			this->drawLine(y, iCurOffset + y * this->iLineWidth,
 				this->pLineBuffer, iRead);
 			if (iRead < this->iLineWidth) {
 				y++;

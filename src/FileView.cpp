@@ -86,8 +86,9 @@ void FileView::statusAlert(const char *cMsg)
 void FileView::generateHeader(std::ostringstream& ss)
 	throw ()
 {
+	unsigned long offsetInBytes = (this->iOffset * this->bitWidth) >> 3;
 	// TODO: Leading spaces are dodgy, erase the line or something first.
-	ss << "         Offset: " << this->iOffset << '+' << this->intraByteOffset
+	ss << "         Offset: " << offsetInBytes << '+' << this->intraByteOffset
 		<< "b  Cell size: " << this->bitWidth
 		<< "b/";
 	if (this->file.getEndian() == camoto::bitstream::littleEndian) {
