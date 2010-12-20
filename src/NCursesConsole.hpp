@@ -98,6 +98,9 @@ class NCursesConsole: virtual public IConsole
 		std::string getString(const std::string& strPrompt, int maxLen)
 			throw ();
 
+		void setColoursFromConfig()
+			throw ();
+
 };
 
 #endif // NCURSESCONSOLE_HPP_

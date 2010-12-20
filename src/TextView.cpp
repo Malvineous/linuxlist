@@ -22,6 +22,7 @@
 #include "TextView.hpp"
 #include "HexView.hpp"
 #include "HelpView.hpp"
+#include "cfg.hpp"
 
 /// Maximum number of lines to reach when pressing the 'end' key.  If the file
 /// has more lines than this, this is as far as the 'end' key will go.
@@ -117,6 +118,7 @@ bool TextView::processKey(Key c)
 		case ALT('h'): {
 			IViewPtr newView(new HexView(*this));
 			this->pConsole->setView(newView);
+			::cfg.view = View_Hex;
 			break;
 		}
 		case CTRL('L'): this->redrawScreen(); break;

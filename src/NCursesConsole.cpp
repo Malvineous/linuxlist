@@ -97,38 +97,19 @@ NCursesConsole::NCursesConsole(void)
 	nonl(); // Don't autoconvert the return key
 	curs_set(0);  // Hide the cursor
 
+	// Create the status bars
+	this->winStatus[0] = newwin(1, COLS, 0, 0);
+	this->winStatus[1] = newwin(1, COLS, LINES-1, 0);
+
+	// Create the main window between the status bars
+	this->winContent = newwin(LINES - 2, COLS, 1, 0);
+
 	// Define our colours
 	if (has_colors() == FALSE) {
 		// TODO: Can we still cope with reverse video or something?
 	}
 	start_color();
-	init_pair(CLR_STATUSBAR,
-		cgaColours[cfg.clrStatusBar.iFG & 7],
-		cgaColours[cfg.clrStatusBar.iBG & 7]);
-	this->iAttribute[CLR_STATUSBAR] =
-		(cfg.clrStatusBar.iFG & 8) ? A_BOLD : A_NORMAL;
-	init_pair(CLR_CONTENT,
-		cgaColours[cfg.clrContent.iFG & 7],
-		cgaColours[cfg.clrContent.iBG & 7]);
-	this->iAttribute[CLR_CONTENT] =
-		(cfg.clrContent.iFG & 8) ? A_BOLD : A_NORMAL;
-
-	// Create the status bars
-	this->winStatus[0] = newwin(1, COLS, 0, 0);
-	this->winStatus[1] = newwin(1, COLS, LINES-1, 0);
-	for (int i = 0; i < 2; i++) {
-		wattrset(this->winStatus[i],
-			COLOR_PAIR(CLR_STATUSBAR) | this->iAttribute[CLR_STATUSBAR]);
-		wbkgdset(this->winStatus[i], COLOR_PAIR(CLR_STATUSBAR));
-		wclear(this->winStatus[i]);
-	}
-
-	// Create the main window between the status bars
-	this->winContent = newwin(LINES - 2, COLS, 1, 0);
-	wattrset(this->winContent,
-		COLOR_PAIR(CLR_CONTENT) | this->iAttribute[CLR_CONTENT]);
-	wbkgdset(this->winContent, COLOR_PAIR(CLR_CONTENT));
-	wclear(this->winContent);
+	this->setColoursFromConfig();
 
 	idlok(this->winContent, TRUE); // enable efficient scrolling
 	scrollok(this->winContent, TRUE); // Allow scrolling
@@ -349,9 +330,36 @@ std::string NCursesConsole::getString(const std::string& strPrompt, int maxLen)
 			s += c;
 			wechochar(this->winStatus[SB_BOTTOM], c);
 		}
-		//printf("%02X\n", c);
-		//wnoutrefresh(this->winStatus[SB_BOTTOM]);
 	}
 	curs_set(0);
 	return s;
+}
+
+void NCursesConsole::setColoursFromConfig()
+	throw ()
+{
+	init_pair(CLR_STATUSBAR,
+		cgaColours[cfg.clrStatusBar.iFG & 7],
+		cgaColours[cfg.clrStatusBar.iBG & 7]);
+	this->iAttribute[CLR_STATUSBAR] =
+		(cfg.clrStatusBar.iFG & 8) ? A_BOLD : A_NORMAL;
+	init_pair(CLR_CONTENT,
+		cgaColours[cfg.clrContent.iFG & 7],
+		cgaColours[cfg.clrContent.iBG & 7]);
+	this->iAttribute[CLR_CONTENT] =
+		(cfg.clrContent.iFG & 8) ? A_BOLD : A_NORMAL;
+
+	for (int i = 0; i < 2; i++) {
+		wattrset(this->winStatus[i],
+			COLOR_PAIR(CLR_STATUSBAR) | this->iAttribute[CLR_STATUSBAR]);
+		wbkgdset(this->winStatus[i], COLOR_PAIR(CLR_STATUSBAR));
+		wclear(this->winStatus[i]);
+	}
+
+	wattrset(this->winContent,
+		COLOR_PAIR(CLR_CONTENT) | this->iAttribute[CLR_CONTENT]);
+	wbkgdset(this->winContent, COLOR_PAIR(CLR_CONTENT));
+	wclear(this->winContent);
+
+	return;
 }

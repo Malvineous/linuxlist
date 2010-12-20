@@ -164,6 +164,14 @@ class IConsole
 		virtual std::string getString(const std::string& strPrompt, int maxLen)
 			throw () = 0;
 
+		/// Update the screen colours from the config file.
+		/**
+		 * The console constructor should call this function to set up initial
+		 * colours, and it may then be called later on to set different colours.
+		 */
+		virtual void setColoursFromConfig()
+			throw () = 0;
+
 };
 
 #endif // ICONSOLE_HPP_

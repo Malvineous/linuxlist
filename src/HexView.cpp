@@ -22,6 +22,7 @@
 #include "HexView.hpp"
 #include "TextView.hpp"
 #include "HelpView.hpp"
+#include "cfg.hpp"
 
 #define min(x, y) (((x) < (y)) ? (x) : (y))
 #define max(x, y) (((x) > (y)) ? (x) : (y))
@@ -159,6 +160,7 @@ bool HexView::processKey(Key c)
 					this->file.flush();
 					IViewPtr newView(new TextView(*this));
 					this->pConsole->setView(newView);
+					::cfg.view = View_Text;
 					break;
 				}
 				case Key_Up: this->scrollRel(-this->iLineWidth); break;

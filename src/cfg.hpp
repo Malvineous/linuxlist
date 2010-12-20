@@ -26,11 +26,18 @@ struct CGAColour
 	unsigned char iFG;
 	unsigned char iBG;
 };
+
+enum InitialView {
+	View_Text = 0,
+	View_Hex  = 1,
+};
+
 struct Config
 {
 	CGAColour clrStatusBar;
 	CGAColour clrContent;
 	CGAColour clrHighlight;
+	InitialView view;
 };
 
 extern Config cfg;

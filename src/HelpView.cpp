@@ -19,6 +19,7 @@
  */
 
 #include "HelpView.hpp"
+#include "cfg.hpp"
 
 #define HELP_TEXT \
 	"Linux List - a Linux clone of Vernon D. Buerg's List file viewer\n" \
@@ -34,11 +35,15 @@
 	"  Home/End   Jump to start/end   E/e   Set big/little endian\n" \
 	"  Ctrl+L     Redraw screen       B/b   +/- num bits per cell\n" \
 	"\n" \
-	"                                 Hex-view keys\n" \
-	"                                 ~~~~~~~~~~~~~\n" \
-	"                                 Tab   Cycle edit mode\n" \
-  "                                 +/-   Alter line width\n" \
-	"                                 g     Go to offset (prefix 0=oct, 0x=hex)\n" \
+	"  Set colours (help view only)   Hex-view keys\n" \
+	"  ~~~~~~~~~~~~~~~~~~~~~~~~~~~~   ~~~~~~~~~~~~~\n" \
+	"  F/f  Document foreground       Tab   Cycle edit mode\n" \
+	"  B/b  Document background       +/-   Alter line width\n" \
+	"  S/s  Status bar foreground     g     Go to offset (prefix 0=oct, 0x=hex)\n" \
+	"  C/c  Status bar background\n" \
+	"  H/h  Highlight foreground\n" \
+	"  M/m  Highlight background\n" \
+	"  d    Reset to default colours\n" \
 	"\n" \
 	"-= ASCII table =-\n" \
 	"\n" \
@@ -99,6 +104,7 @@ HelpView::~HelpView()
 bool HelpView::processKey(Key c)
 	throw ()
 {
+	bool setColours = false;
 	switch (c) {
 		case Key_F1:
 		case Key_Esc:
@@ -118,6 +124,34 @@ bool HelpView::processKey(Key c)
 		case Key_PageDown:
 			this->TextView::processKey(c);
 			break;
+
+		case 'F': ::cfg.clrContent.iFG   = (::cfg.clrContent.iFG   +  1) % 16; setColours = true; break;
+		case 'f': ::cfg.clrContent.iFG   = (::cfg.clrContent.iFG   + 15) % 16; setColours = true; break;
+		case 'B': ::cfg.clrContent.iBG   = (::cfg.clrContent.iBG   +  1) % 16; setColours = true; break;
+		case 'b': ::cfg.clrContent.iBG   = (::cfg.clrContent.iBG   + 15) % 16; setColours = true; break;
+		case 'S': ::cfg.clrStatusBar.iFG = (::cfg.clrStatusBar.iFG +  1) % 16; setColours = true; break;
+		case 's': ::cfg.clrStatusBar.iFG = (::cfg.clrStatusBar.iFG + 15) % 16; setColours = true; break;
+		case 'C': ::cfg.clrStatusBar.iBG = (::cfg.clrStatusBar.iBG +  1) % 16; setColours = true; break;
+		case 'c': ::cfg.clrStatusBar.iBG = (::cfg.clrStatusBar.iBG + 15) % 16; setColours = true; break;
+		case 'H': ::cfg.clrHighlight.iFG = (::cfg.clrHighlight.iFG +  1) % 16; setColours = true; break;
+		case 'h': ::cfg.clrHighlight.iFG = (::cfg.clrHighlight.iFG + 15) % 16; setColours = true; break;
+		case 'M': ::cfg.clrHighlight.iBG = (::cfg.clrHighlight.iBG +  1) % 16; setColours = true; break;
+		case 'm': ::cfg.clrHighlight.iBG = (::cfg.clrHighlight.iBG + 15) % 16; setColours = true; break;
+		case 'd':
+			::cfg.clrStatusBar.iFG = 15;
+			::cfg.clrStatusBar.iBG = 4;
+			::cfg.clrContent.iFG = 15;
+			::cfg.clrContent.iBG = 1;
+			::cfg.clrHighlight.iFG = 10;
+			::cfg.clrHighlight.iBG = 0;
+			setColours = true;
+			break;
+	}
+	if (setColours) {
+		this->pConsole->setColoursFromConfig();
+		this->redrawScreen();
+		this->init(); // redraw status bars
+		this->pConsole->update();
 	}
 	return true; // true == keep going (don't quit)
 }

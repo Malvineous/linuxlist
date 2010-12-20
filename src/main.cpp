@@ -28,10 +28,19 @@
 #include "NCursesConsole.hpp"
 #endif
 #include "HexView.hpp"
+#include "TextView.hpp"
 
 Config cfg;
 
 typedef unsigned char byte;
+
+bool readConfig(std::iostream& config)
+{
+	if (!config.good()) return false;
+	config.read((char*)&::cfg, sizeof(::cfg));
+	if (config.gcount() != sizeof(::cfg)) return false;
+	return true;
+}
 
 int main(int iArgC, char *cArgV[])
 {
@@ -42,12 +51,19 @@ int main(int iArgC, char *cArgV[])
 	}
 
 	// Load config - TODO: boost::program_options defaults!
-	::cfg.clrStatusBar.iFG = 15;
-	::cfg.clrStatusBar.iBG = 4;
-	::cfg.clrContent.iFG = 15;
-	::cfg.clrContent.iBG = 1;
-	::cfg.clrHighlight.iFG = 10;
-	::cfg.clrHighlight.iBG = 0;
+	std::fstream config(CONFIG_FILE, std::ios::in);
+	if (!readConfig(config)) {
+		// Set defaults
+		::cfg.clrStatusBar.iFG = 15;
+		::cfg.clrStatusBar.iBG = 4;
+		::cfg.clrContent.iFG = 15;
+		::cfg.clrContent.iBG = 1;
+		::cfg.clrHighlight.iFG = 10;
+		::cfg.clrHighlight.iBG = 0;
+		::cfg.view = View_Text;
+	} else {
+		config.close();
+	}
 
 #ifdef HAVE_NCURSESW_H
 	IConsole *pConsole = new NCursesConsole();
@@ -59,12 +75,25 @@ int main(int iArgC, char *cArgV[])
 	fsFile->seekg(0, std::ios::end);
 	std::fstream::off_type iFileSize = fsFile->tellg();
 
-	IViewPtr pView(new HexView(strFilename, fsFile, iFileSize, pConsole));
+	IViewPtr pView;
+	switch (::cfg.view) {
+		case View_Hex:
+			pView.reset(new HexView(strFilename, fsFile, iFileSize, pConsole));
+			break;
+		default: // View_Text
+			pView.reset(new TextView(strFilename, fsFile, iFileSize, pConsole));
+			break;
+	}
 
 	pConsole->setView(pView); // pConsole now owns pView (so we don't delete it)
 	pConsole->mainLoop();
 
 	delete pConsole;
 
+	// Save config file
+	config.open(CONFIG_FILE, std::ios::out);
+	config.seekp(0, std::ios::beg);
+	config.write((char*)&::cfg, sizeof(::cfg));
+	config.close();
 	return 0;
 }
