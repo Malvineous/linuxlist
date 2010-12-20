@@ -30,9 +30,6 @@
 /// Number of chars wide each num is (e.g. 9-bit nums are three chars wide)
 #define CALC_HEXCELL_WIDTH ((this->bitWidth + 3) / 4)
 
-/// Macro to convert an uppercase ASCII letter into the ncurses key symbol for
-/// that key being pressed while holding the Control key.
-#define CTRL(k)  (k - '@')
 
 HexView::HexView(std::string strFilename, camoto::iostream_sptr data,
 	std::fstream::off_type iFileSize, IConsole *pConsole)
@@ -246,9 +243,6 @@ void HexView::scrollRel(int iDelta)
 	} else {
 		// The user wants to scroll down, towards the end of the file.
 
-		// But prevent them from actually scrolling past the last byte.
-		//if (this->iOffset >= this->iFileSize - 1) return;
-
 		// Crop the scroll so that it only goes up to the last byte, not past it
 		if (this->iOffset + iDelta >= this->iFileSize) {
 			if (iDelta % this->iLineWidth == 0) {
@@ -344,7 +338,6 @@ void HexView::redrawLines(int iTop, int iBottom)
 	// Blank out any leftover lines
 	for (; y < iBottom; y++) {
 		this->pConsole->gotoxy(0, y);
-		//this->pConsole->putstr("blankline");
 		this->pConsole->eraseToEOL();
 	}
 	this->showCursor(true);

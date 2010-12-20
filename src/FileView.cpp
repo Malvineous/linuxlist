@@ -56,7 +56,6 @@ void FileView::init()
 	throw ()
 {
 	this->pConsole->clearStatusBar(SB_TOP);
-	//this->pConsole->clearStatusBar(SB_BOTTOM);
 	this->pConsole->setStatusBar(SB_TOP, SB_LEFT, this->strFilename);
 	this->bStatusAlertVisible = true; // force redraw
 	this->statusAlert(NULL); // draw the bottom status bar with no alert

@@ -218,10 +218,7 @@ void NCursesConsole::setStatusBar(SB_Y eY, SB_X eX, const std::string& strMessag
 		case SB_CENTRE: wmove(this->winStatus[eY], 0, (COLS + strMessage.length()) / 2); break;
 		case SB_RIGHT:  wmove(this->winStatus[eY], 0, COLS - strMessage.length()); break;
 	}
-	//wprintw(this->winStatus[eY], "%s", strMessage.c_str());
 	waddstr(this->winStatus[eY], strMessage.c_str());
-	// Copy the change onto the virtual screen
-//			wnoutrefresh(this->winStatus[eY]);
 	return;
 }
 
@@ -268,7 +265,6 @@ void NCursesConsole::putstr(const std::string& strContent)
 		// No conversion, display as-is
 		waddstr(this->winContent, strContent.c_str());
 	}
-	//waddnwstr(this->winContent, (wchar_t *)cOutBuf, strContent.length());
 	return;
 }
 
