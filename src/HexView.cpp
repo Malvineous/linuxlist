@@ -80,6 +80,8 @@ bool HexView::processKey(Key c)
 
 	// Global keys, always active
 	switch (c) {
+		case Key_None: // ignore
+			return true;
 		case Key_Esc:
 		case Key_F10:
 			return false;

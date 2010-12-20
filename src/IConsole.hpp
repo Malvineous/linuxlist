@@ -113,7 +113,8 @@ class IConsole
 
 		/// Get the screen size.
 		/**
-		 * The values are in text cells, e.g. 80x25.
+		 * The values are in text cells, e.g. 80x23.  This doesn't include the two
+		 * status bars so will always be two rows less than the actual screen size.
 		 *
 		 * @param iWidth
 		 *   Pointer to where the width value will be written.

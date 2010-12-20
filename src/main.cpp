@@ -27,6 +27,11 @@
 #ifdef HAVE_NCURSESW_H
 #include "NCursesConsole.hpp"
 #endif
+
+#ifdef HAVE_LIBX11
+#include "XConsole.hpp"
+#endif
+
 #include "HexView.hpp"
 #include "TextView.hpp"
 
@@ -44,13 +49,12 @@ bool readConfig(std::iostream& config)
 
 int main(int iArgC, char *cArgV[])
 {
-	// TODO: Use boost::program_options
 	if (iArgC != 2) {
 		std::cerr << "Usage: ll <filename>" << std::endl;
 		return 1;
 	}
 
-	// Load config - TODO: boost::program_options defaults!
+	// Load config
 	std::fstream config(CONFIG_FILE, std::ios::in);
 	if (!readConfig(config)) {
 		// Set defaults
@@ -65,8 +69,21 @@ int main(int iArgC, char *cArgV[])
 		config.close();
 	}
 
+	IConsole *pConsole = NULL;
+
+	// Try X11 interface first, if present
+#ifdef HAVE_LIBX11
+	Display *display = XOpenDisplay("");
+	if (display) {
+		pConsole = new XConsole(display);
+	}
+#endif
+
+	// Otherwise fall back to curses
 #ifdef HAVE_NCURSESW_H
-	IConsole *pConsole = new NCursesConsole();
+	if (!pConsole) {
+		pConsole = new NCursesConsole();
+	}
 #endif
 
 	std::string strFilename = cArgV[1];

@@ -17,6 +17,7 @@ AC_PROG_CXX
 
 # Checks for libraries.
 AC_PROG_LIBTOOL
+AC_CHECK_LIB([X11], [XOpenDisplay])
 
 BOOST_REQUIRE([1.37])
 

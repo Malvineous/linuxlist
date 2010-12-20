@@ -1,3 +1,7 @@
+Outstanding issues:
+
+ - Text input (used by 'g' for go to offset) isn't implemented in X11 console
+
 Planned features:
 
  - Search ('/' key)
