@@ -286,9 +286,9 @@ void XConsole::getContentDims(int *iWidth, int *iHeight)
 void XConsole::scrollContent(int iX, int iY)
 	throw ()
 {
-	int scrollSize = (this->screenHeight - 3) * this->screenWidth;
+	int scrollSize = (this->screenHeight - 2 - abs(iY)) * this->screenWidth;
 	if (iY < 0) {
-		int start = 2 * this->screenWidth;
+		int start = (-iY + 1) * this->screenWidth;
 		memmove(
 			this->text + start,
 			this->text + 1 * this->screenWidth,
@@ -299,7 +299,7 @@ void XConsole::scrollContent(int iX, int iY)
 		int start = 1 * this->screenWidth;
 		memmove(
 			this->text + start,
-			this->text + 2 * this->screenWidth,
+			this->text + (iY+1) * this->screenWidth,
 			scrollSize
 		);
 		memset(this->changed + start, 1, scrollSize);

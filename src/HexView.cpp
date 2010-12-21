@@ -285,7 +285,7 @@ void HexView::scrollRel(int iDelta)
 		// No, we're only scrolling by a multiple of exact lines.
 		int iLines = iDelta / this->iLineWidth;
 		assert(iLines != 0);
-		if (abs(iLines) > iHeight) {
+		if (abs(iLines) >= iHeight) {
 			// But we're scrolling by more than a screenful, so we'll need to
 			// redraw the whole screen anyway.
 			this->iOffset += iDelta;
@@ -333,12 +333,12 @@ void HexView::redrawLines(int iTop, int iBottom)
 				if (!file.read(this->bitWidth, &this->pLineBuffer[iRead])) break;
 			}
 
-			this->drawLine(y, iCurOffset + y * this->iLineWidth,
-				this->pLineBuffer, iRead);
+			this->drawLine(y, iCurOffset, this->pLineBuffer, iRead);
 			if (iRead < this->iLineWidth) {
 				y++;
 				break; // EOF
 			}
+			iCurOffset += this->iLineWidth;
 		}
 	}
 	// Blank out any leftover lines
