@@ -172,7 +172,7 @@ bool HexView::processKey(Key c)
 					int iLastLineLen = sizeInCells % this->iLineWidth;
 					if (iLastLineLen == 0) iLastLineLen = this->iLineWidth;
 					this->scrollAbs(sizeInCells - iLastLineLen -
-						(iHeight - 1) * this->iLineWidth);
+						(iHeight - 2) * this->iLineWidth);
 					break;
 				}
 				default: break;
@@ -325,7 +325,7 @@ void HexView::redrawLines(int iTop, int iBottom)
 	unsigned long offsetInBytes = (iCurOffset * this->bitWidth) >> 3;
 
 	// Draw the content, unless we're past EOF
-	if (offsetInBytes < this->iFileSize) {
+	if (offsetInBytes <= this->iFileSize) {
 		for (; y < iBottom; y++) {
 
 			int iRead;
