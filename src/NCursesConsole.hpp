@@ -23,14 +23,20 @@
 
 #include <config.h>
 
-#ifndef HAVE_NCURSESW_H
-#error This file should not be compiled without ncurses!
+#ifdef HAVE_NCURSESW
+# ifdef HAVE_NCURSESW_H
+#  include <ncursesw/ncurses.h>
+# else
+#  include <ncurses.h>
+# endif
+#else
+# error This file should not be compiled without ncurses!
 #endif
+
 #ifndef HAVE_ICONV
 #error This file should not be compiled without iconv!
 #endif
 
-#include <ncursesw/ncurses.h>
 #include <iconv.h>
 #include "IConsole.hpp"
 

@@ -24,7 +24,7 @@
 #include <iostream>
 #include "cfg.hpp"
 
-#ifdef HAVE_NCURSESW_H
+#ifdef HAVE_NCURSESW
 #include "NCursesConsole.hpp"
 #endif
 
@@ -80,11 +80,24 @@ int main(int iArgC, char *cArgV[])
 #endif
 
 	// Otherwise fall back to curses
-#ifdef HAVE_NCURSESW_H
+#ifdef HAVE_NCURSESW
 	if (!pConsole) {
 		pConsole = new NCursesConsole();
 	}
 #endif
+
+	if (!pConsole) {
+		std::cerr << "Unable to find a usable display method from one of [ "
+#ifdef HAVE_LIBX11
+			"X11 "
+#endif
+#ifdef HAVE_NCURSESW
+			"NCurses "
+#endif
+			"]"
+			<< std::endl;
+		return 1;
+	}
 
 	std::string strFilename = cArgV[1];
 	camoto::iostream_sptr fsFile(new std::fstream(strFilename.c_str(), std::fstream::binary | std::fstream::in | std::fstream::out));
