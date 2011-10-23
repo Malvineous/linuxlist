@@ -123,5 +123,10 @@ int main(int iArgC, char *cArgV[])
 	config.seekp(0, std::ios::beg);
 	config.write((char*)&::cfg, sizeof(::cfg));
 	config.close();
+
+#ifdef HAVE_LIBX11
+	if (display) XCloseDisplay(display);
+#endif
+
 	return 0;
 }

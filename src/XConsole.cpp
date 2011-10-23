@@ -109,18 +109,16 @@ XConsole::XConsole(Display *display)
 XConsole::~XConsole()
 	throw ()
 {
-	delete this->changed;
-	delete this->text;
+	delete[] this->changed;
+	delete[] this->text;
 
-	XFreePixmap(this->display, this->font);
-	XFreeGC(this->display, this->gc);
 	XDestroyWindow(this->display, this->win);
+	XFreeGC(this->display, this->gc);
+	XFreePixmap(this->display, this->font);
 
 	int screen = DefaultScreen(this->display);
 	Colormap cmap = XDefaultColormap(this->display, screen);
 	XFreeColors(this->display, cmap, this->pixels, PX_TOTAL, 0);
-
-	XCloseDisplay(this->display);
 }
 
 void XConsole::setView(IViewPtr pView)
@@ -193,8 +191,8 @@ void XConsole::mainLoop()
 				if ((this->screenWidth != newWidth) || (this->screenHeight != newHeight)) {
 					this->screenWidth = newWidth;
 					this->screenHeight = newHeight;
-					delete this->text;
-					delete this->changed;
+					delete[] this->text;
+					delete[] this->changed;
 					int screensize = newWidth * newHeight;
 					this->text    = new uint8_t[screensize];
 					this->changed = new uint8_t[screensize];
