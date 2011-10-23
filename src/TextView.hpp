@@ -44,8 +44,8 @@ class TextView: public FileView
 
 
 	public:
-		TextView(std::string strFilename, camoto::iostream_sptr file,
-			std::fstream::off_type iFileSize, IConsole *pConsole)
+		TextView(std::string strFilename, camoto::stream::inout_sptr file,
+			IConsole *pConsole)
 			throw ();
 
 		TextView(const FileView& parent)

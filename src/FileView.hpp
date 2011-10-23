@@ -43,8 +43,8 @@ class FileView: virtual public IView
 		int bitWidth;             ///< Number of bits in each char/cell
 		int intraByteOffset;      ///< Bit-level seek offset within cell (0..bitWidth-1)
 
-		std::fstream::off_type iOffset; ///< Offset into file of first character in content window
-		std::fstream::off_type iFileSize; ///< Length of input stream
+		camoto::stream::pos iOffset; ///< Offset into file of first character in content window
+		camoto::stream::pos iFileSize; ///< Length of input stream
 
 	public:
 		/// Constructor
@@ -61,8 +61,8 @@ class FileView: virtual public IView
 		 * @param pConsole
 		 *   Output console where data is drawn.
 		 */
-		FileView(std::string strFilename, camoto::iostream_sptr data,
-			std::fstream::off_type iFileSize, IConsole *pConsole)
+		FileView(std::string strFilename, camoto::stream::inout_sptr data,
+			IConsole *pConsole)
 			throw ();
 
 		FileView(const FileView& parent)

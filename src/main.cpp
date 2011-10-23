@@ -20,7 +20,7 @@
 
 #include <config.h>
 
-#include <fstream>
+#include <camoto/stream_file.hpp>
 #include <iostream>
 #include "cfg.hpp"
 
@@ -100,18 +100,16 @@ int main(int iArgC, char *cArgV[])
 	}
 
 	std::string strFilename = cArgV[1];
-	camoto::iostream_sptr fsFile(new std::fstream(strFilename.c_str(), std::fstream::binary | std::fstream::in | std::fstream::out));
-
-	fsFile->seekg(0, std::ios::end);
-	std::fstream::off_type iFileSize = fsFile->tellg();
+	camoto::stream::file_sptr fsFile(new camoto::stream::file());
+	fsFile->open(strFilename);
 
 	IViewPtr pView;
 	switch (::cfg.view) {
 		case View_Hex:
-			pView.reset(new HexView(strFilename, fsFile, iFileSize, pConsole));
+			pView.reset(new HexView(strFilename, fsFile, pConsole));
 			break;
 		default: // View_Text
-			pView.reset(new TextView(strFilename, fsFile, iFileSize, pConsole));
+			pView.reset(new TextView(strFilename, fsFile, pConsole));
 			break;
 	}
 

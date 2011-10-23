@@ -20,8 +20,8 @@
 
 #include "FileView.hpp"
 
-FileView::FileView(std::string strFilename, camoto::iostream_sptr data,
-	std::fstream::off_type iFileSize, IConsole *pConsole)
+FileView::FileView(std::string strFilename, camoto::stream::inout_sptr data,
+	IConsole *pConsole)
 	throw () :
 		strFilename(strFilename),
 		file(data, camoto::bitstream::littleEndian),
@@ -30,7 +30,7 @@ FileView::FileView(std::string strFilename, camoto::iostream_sptr data,
 		bitWidth(8),
 		intraByteOffset(0),
 		iOffset(0),
-		iFileSize(iFileSize)
+		iFileSize(data->size())
 {
 }
 

@@ -31,10 +31,10 @@
 #define CALC_HEXCELL_WIDTH ((this->bitWidth + 3) / 4)
 
 
-HexView::HexView(std::string strFilename, camoto::iostream_sptr data,
-	std::fstream::off_type iFileSize, IConsole *pConsole)
+HexView::HexView(std::string strFilename, camoto::stream::inout_sptr data,
+	IConsole *pConsole)
 	throw () :
-		FileView(strFilename, data, iFileSize, pConsole),
+		FileView(strFilename, data, pConsole),
 		iLineWidth(16),
 		iLineAlloc(16),
 		pLineBuffer(NULL),
@@ -317,9 +317,8 @@ void HexView::redrawLines(int iTop, int iBottom)
 {
 	this->showCursor(false);
 	int y = iTop;
-	std::fstream::off_type iCurOffset = this->iOffset + iTop * this->iLineWidth;
-	file.clear(); // clear any errors (e.g. reaching EOF previously)
-	file.seek(iCurOffset * this->bitWidth + this->intraByteOffset, std::ios::beg);
+	camoto::stream::pos iCurOffset = this->iOffset + iTop * this->iLineWidth;
+	file.seek(iCurOffset * this->bitWidth + this->intraByteOffset, camoto::stream::start);
 
 	// Convert the offset from whatever bitwidth we're currently using into bytes
 	unsigned long offsetInBytes = (iCurOffset * this->bitWidth) >> 3;
@@ -551,13 +550,12 @@ void HexView::moveCursor(int delta)
 void HexView::writeByteAtCursor(unsigned int byte)
 	throw ()
 {
-	std::fstream::off_type iCurOffset = this->iOffset + this->cursorOffset;
-	this->file.clear(); // clear any errors (e.g. reaching EOF previously)
+	camoto::stream::pos iCurOffset = this->iOffset + this->cursorOffset;
 	int dest = iCurOffset * this->bitWidth + this->intraByteOffset;
 	switch (this->editMode) {
 		case HexEdit: {
 			// TODO: Just make use of the bitstream functions to handle all this!
-			this->file.seek(dest, std::ios::beg);
+			this->file.seek(dest, camoto::stream::start);
 			int cur;
 			if (!this->file.read(this->bitWidth, &cur)) {
 				this->statusAlert("Read error getting byte to update :-(");
@@ -576,7 +574,7 @@ void HexView::writeByteAtCursor(unsigned int byte)
 			break;
 		}
 	}
-	this->file.seek(dest, std::ios::beg);
+	this->file.seek(dest, camoto::stream::start);
 	if (!this->file.write(this->bitWidth, byte)) {
 		this->statusAlert("Write error :-(");
 	} else {

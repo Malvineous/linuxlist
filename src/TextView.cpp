@@ -31,10 +31,10 @@
 #define min(x, y) (((x) < (y)) ? (x) : (y))
 #define max(x, y) (((x) > (y)) ? (x) : (y))
 
-TextView::TextView(std::string strFilename, camoto::iostream_sptr data,
-	std::fstream::off_type iFileSize, IConsole *pConsole)
+TextView::TextView(std::string strFilename, camoto::stream::inout_sptr data,
+	IConsole *pConsole)
 	throw () :
-		FileView(strFilename, data, iFileSize, pConsole),
+		FileView(strFilename, data, pConsole),
 		iLineAlloc(80),
 		line(0),
 		cacheComplete(false)
@@ -296,9 +296,8 @@ void TextView::redrawLines(int iTop, int iBottom, int width)
 	if (this->line + y < cachedLines) {
 		// There is content to draw (as opposed to drawing past EOF, e.g. when
 		// drawing 'new' lines at the bottom of the screen when scrolling.)
-		file.clear(); // clear any errors (e.g. reaching EOF previously)
 		int lastOffset = this->linePos[this->line + y];//iCurOffset * this->bitWidth + this->intraByteOffset;
-		file.seek(lastOffset, std::ios::beg);
+		file.seek(lastOffset, camoto::stream::start);
 		bool eof = false;
 
 		int off = 0;
@@ -388,8 +387,7 @@ void TextView::cacheLines(int maxLine, int width)
 	if (maxLine >= cachedLines) {
 		// Need to read more data to get to this line
 		int lastOffset = this->linePos.back();
-		file.clear(); // recover from any previous EOF
-		file.seek(lastOffset, std::ios::beg);
+		file.seek(lastOffset, camoto::stream::start);
 
 		int off = 0;
 		bool eof = false;

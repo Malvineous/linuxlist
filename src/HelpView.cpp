@@ -18,6 +18,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <camoto/stream_string.hpp>
 #include "HelpView.hpp"
 #include "cfg.hpp"
 
@@ -81,17 +82,21 @@
 	"  You should have received a copy of the GNU General Public License\n" \
 	"  along with this program.  If not, see <http://www.gnu.org/licenses/>.\n"
 
-std::stringstream HelpView::ss(std::string(HELP_TEXT, sizeof(HELP_TEXT) - 1));
-
-class deleter {
-	public:
-		void operator()(std::stringstream *p) { }
+struct helpContent {
+	std::string content;
+	camoto::stream::string_sptr contentStream;
+	helpContent() :
+		content(HELP_TEXT, sizeof(HELP_TEXT) - 1),
+		contentStream(new camoto::stream::string())
+	{
+		this->contentStream->open(&this->content);
+	}
 };
+helpContent help;
 
 HelpView::HelpView(IViewPtr oldView, IConsole *pConsole)
 	throw () :
-		TextView("Help (F10 to exit)", camoto::iostream_sptr(&ss, deleter()),
-			sizeof(HELP_TEXT) - 1, pConsole),
+		TextView("Help (F10 to exit)", ::help.contentStream, pConsole),
 		oldView(oldView)
 {
 }
