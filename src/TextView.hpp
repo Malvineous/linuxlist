@@ -21,13 +21,8 @@
 #ifndef TEXTVIEW_HPP_
 #define TEXTVIEW_HPP_
 
-#include <config.h>
-
-#include <fstream>
-#include <sstream>
-#include <iomanip>
 #include <vector>
-#include <camoto/bitstream.hpp>
+#include <camoto/stream.hpp>
 #include "IConsole.hpp"
 #include "FileView.hpp"
 
@@ -43,15 +38,34 @@ class TextView: public FileView
 		bool cacheComplete;       ///< True if linePos covers the entire file
 
 	public:
+		/// Create a new text view of the given file.
+		/**
+		 * @param strFilename
+		 *   Filename to show user (not used for actual data access).
+		 *
+		 * @param file
+		 *   Stream providing content for the view.
+		 *
+		 * @param pConsole
+		 *   Console to draw on.
+		 */
 		TextView(std::string strFilename, camoto::stream::inout_sptr file,
 			IConsole *pConsole);
 
+		/// Create a new text view from an existing view.
+		/**
+		 * @param parent
+		 *   FileView instance from an existing view.  The content and seek position
+		 *   is copied from here.  The view can be deleted upon return.
+		 */
 		TextView(const FileView& parent);
+
 		~TextView();
 
-		bool processKey(Key c);
 		void redrawScreen();
 		void generateHeader(std::ostringstream& ss);
+
+		bool processKey(Key c);
 
 		void setBitWidth(int newWidth);
 		void setIntraByteOffset(int delta);

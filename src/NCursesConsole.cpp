@@ -72,7 +72,8 @@ wchar_t ctl_utf8[] = {
 const wchar_t ctl_utf8_0x7f = 0x2302;
 
 NCursesConsole::NCursesConsole(void)
-	:	maxLineLen(80)
+	:	maxLineLen(80),
+		cursorInWindow(true)
 {
 	// Init iconv
 	setlocale(LC_ALL, ""); // set locale based on LANG env var
@@ -123,6 +124,8 @@ NCursesConsole::NCursesConsole(void)
 NCursesConsole::~NCursesConsole()
 {
 	delwin(this->winContent);
+	delwin(this->winStatus[1]);
+	delwin(this->winStatus[0]);
 
 	// Restore the terminal
 	endwin();
@@ -130,40 +133,43 @@ NCursesConsole::~NCursesConsole()
 	iconv_close(this->cd);
 }
 
-void NCursesConsole::setView(IViewPtr pView)
-{
-	this->nextView = pView;
-	return;
-}
-
 void NCursesConsole::mainLoop()
 {
-	assert(this->nextView);
 	Key c;
 	bool escape = false; // was last keypress ESC?
 	do {
-		if (this->nextView) {
-			this->pView = this->nextView;
-			this->nextView.reset();
-			this->pView->init();
-			this->pView->redrawScreen();
-			this->update();
-		}
-
 		c = (Key)getch();
 		if (c & KEY_CODE_YES) {
 			// Convert platform-specific keys into generic keys
 			switch (c) {
-				case KEY_UP:    c = Key_Up; break;
-				case KEY_DOWN:  c = Key_Down; break;
-				case KEY_LEFT:  c = Key_Left; break;
-				case KEY_RIGHT: c = Key_Right; break;
-				case KEY_PPAGE: c = Key_PageUp; break;
-				case KEY_NPAGE: c = Key_PageDown; break;
-				case KEY_HOME:  c = Key_Home; break;
-				case KEY_END:   c = Key_End; break;
-				case KEY_F(1):  c = Key_F1; break;
-				case KEY_F(10): c = Key_F10; break;
+				case KEY_BACKSPACE: c = Key_Backspace; break;
+				case KEY_UP:        c = Key_Up; break;
+				case KEY_DOWN:      c = Key_Down; break;
+				case KEY_LEFT:      c = Key_Left; break;
+				case KEY_RIGHT:     c = Key_Right; break;
+				case KEY_PPAGE:     c = Key_PageUp; break;
+				case KEY_NPAGE:     c = Key_PageDown; break;
+				case KEY_HOME:      c = Key_Home; break;
+				case KEY_END:       c = Key_End; break;
+				case KEY_DC:        c = Key_Del; break;
+				case KEY_F(1):      c = Key_F1; break;
+				case KEY_F(10):     c = Key_F10; break;
+				case KEY_RESIZE:
+					// Terminal resized
+					delwin(this->winContent);
+					delwin(this->winStatus[1]);
+					delwin(this->winStatus[0]);
+					this->winStatus[0] = newwin(1, COLS, 0, 0);
+					this->winStatus[1] = newwin(1, COLS, LINES-1, 0);
+					this->winContent = newwin(LINES - 2, COLS, 1, 0);
+
+					this->setColoursFromConfig();
+
+					idlok(this->winContent, TRUE); // enable efficient scrolling
+					scrollok(this->winContent, TRUE); // Allow scrolling
+
+					this->view->redrawScreen();
+					continue;
 				default: continue; // ignore unknown key
 			}
 			escape = false;
@@ -174,14 +180,15 @@ void NCursesConsole::mainLoop()
 				else if (c == 27) c = Key_Esc;
 			} else {
 				switch (c) {
-					case 9:  c = Key_Tab; break;
-					case 13: c = Key_Enter; break;
-					case 27: c = Key_None; escape = true; break;
+					case 9:   c = Key_Tab; break;
+					case 13:  c = Key_Enter; break;
+					case 27:  c = Key_None; escape = true; break;
+					case 127: c = Key_Backspace; break;
 					default: break; // allow unknown key through as ASCII
 				}
 			}
 		}
-	} while (this->pView->processKey(c));
+	} while (this->processKey(c));
 
 	return;
 }
@@ -191,6 +198,10 @@ void NCursesConsole::update(void)
 	wnoutrefresh(this->winStatus[0]);
 	wnoutrefresh(this->winStatus[1]);
 	wnoutrefresh(this->winContent);
+	if (!this->cursorInWindow) {
+		// Refresh the status bar again so the cursor ends up in this window
+		wnoutrefresh(this->winStatus[1]);
+	}
 	// Copy the virtual screen onto the terminal
 	doupdate();
 }
@@ -201,23 +212,34 @@ void NCursesConsole::clearStatusBar(SB_Y eY)
 	// use wclear() instead.
 	wmove(this->winStatus[eY], 0, 0);
 	wclrtoeol(this->winStatus[eY]);
+	this->cursorInWindow = true;
 	return;
 }
 
-void NCursesConsole::setStatusBar(SB_Y eY, SB_X eX, const std::string& strMessage)
+void NCursesConsole::setStatusBar(SB_Y eY, SB_X eX,
+	const std::string& strMessage, int cursor)
 {
+	int x;
 	switch (eX) {
-		case SB_LEFT:   wmove(this->winStatus[eY], 0, 0); break;
-		case SB_CENTRE: wmove(this->winStatus[eY], 0, (COLS + strMessage.length()) / 2); break;
-		case SB_RIGHT:  wmove(this->winStatus[eY], 0, COLS - strMessage.length()); break;
+		case SB_LEFT:   x = 0; break;
+		case SB_CENTRE: x = (COLS + strMessage.length() / 2); break;
+		case SB_RIGHT:  x = COLS - strMessage.length(); break;
 	}
+	wmove(this->winStatus[eY], 0, x);
 	waddstr(this->winStatus[eY], strMessage.c_str());
+	if (cursor >= 0) {
+		wmove(this->winStatus[eY], 0, x + cursor);
+		this->cursorInWindow = false;
+	} else {
+		this->cursorInWindow = true;
+	}
 	return;
 }
 
 void NCursesConsole::gotoxy(int x, int y)
 {
 	wmove(this->winContent, y, x);
+	this->cursorInWindow = true;
 	return;
 }
 
@@ -236,9 +258,9 @@ void NCursesConsole::putstr(const std::string& strContent)
 				delete[] wout;
 				goto again;
 			}
-			this->setStatusBar(SB_BOTTOM, SB_LEFT, std::string("!!> iconv error: ") + strerror(errno));
+			this->setStatusBar(SB_BOTTOM, SB_LEFT, std::string("!!> iconv error: ") + strerror(errno),
+				SB_NO_CURSOR_MOVE);
 		} else {
-			//printf("%d chars", ((wchar_t *)pOut) - wout);
 			size_t iCount = (wchar_t *)pOut - wout;
 			for (int i = 0; i < iCount; i++) {
 				if (wout[i] < 32) {
@@ -281,40 +303,6 @@ void NCursesConsole::cursor(bool visible)
 {
 	curs_set(visible ? 1 : 0);
 	return;
-}
-
-std::string NCursesConsole::getString(const std::string& strPrompt, int maxLen)
-{
-	wmove(this->winStatus[SB_BOTTOM], 0, 0);
-	waddstr(this->winStatus[SB_BOTTOM], strPrompt.c_str());
-	waddstr(this->winStatus[SB_BOTTOM], "> ");
-	wclrtoeol(this->winStatus[SB_BOTTOM]);
-	std::string s;
-	char c;
-	curs_set(1);
-	for (;;) {
-		c = wgetch(this->winStatus[SB_BOTTOM]);
-		if ((c == NC_KEY_ENTER1) || (c == NC_KEY_ENTER2)) break;
-		if (c == NC_KEY_BACKSPACE) {
-			if (s.length()) {
-				int len = s.length() - 1;
-				s = s.substr(0, len);
-				len += strPrompt.length() + 2;
-				wmove(this->winStatus[SB_BOTTOM], 0, len);
-				wechochar(this->winStatus[SB_BOTTOM], ' ');
-				wmove(this->winStatus[SB_BOTTOM], 0, len);
-			}
-			continue;
-		}
-		if (c & KEY_CODE_YES) continue; // ignore special keys
-
-		if (s.length() < maxLen) {
-			s += c;
-			wechochar(this->winStatus[SB_BOTTOM], c);
-		}
-	}
-	curs_set(0);
-	return s;
 }
 
 void NCursesConsole::setColoursFromConfig()

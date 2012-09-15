@@ -2,7 +2,7 @@
  * @file   XConsole.hpp
  * @brief  X11 implementation of IConsole.
  *
- * Copyright (C) 2009-2010 Adam Nielsen <malvineous@shikadi.net>
+ * Copyright (C) 2009-2012 Adam Nielsen <malvineous@shikadi.net>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,23 +22,18 @@
 #define XCONSOLE_HPP_
 
 #include <config.h>
-
-#include <stdint.h>
-
 #ifndef USE_X11
 #error This file should not be compiled without X-Windows!
 #endif
 
+#include <stdint.h>
 #include <X11/Xlib.h>
-#include "IConsole.hpp"
+#include "BaseConsole.hpp"
 
 /// Console interface to an X-Windows window.
-class XConsole: virtual public IConsole
+class XConsole: virtual public BaseConsole
 {
 	private:
-		IViewPtr pView;     ///< Current view in use
-		IViewPtr nextView;  ///< If non-NULL, next view to replace pView
-
 		Display *display;   ///< X11 display
 		Window win;         ///< Main window
 		GC gc;              ///< GC for drawing on window
@@ -50,7 +45,7 @@ class XConsole: virtual public IConsole
 		int cursorY;        ///< Current Y position of text cursor
 		bool cursorVisible; ///< Draw the text cursor on the display?
 		uint8_t *text;      ///< Screen content
-		uint8_t *changed;   ///< Screen content
+		uint8_t *changed;   ///< 0=unchanged, 1=changed, since last redrawCells()
 		int screenWidth;    ///< Screen width in text cells, used for sizeof(text)
 		int screenHeight;   ///< Screen height in text cells, used for sizeof(text)
 
@@ -65,20 +60,19 @@ class XConsole: virtual public IConsole
 
 	public:
 		XConsole(Display *display);
-		~XConsole();
+		virtual ~XConsole();
 
-		void setView(IViewPtr pView);
 		void mainLoop();
 		void update(void);
 		void clearStatusBar(SB_Y eY);
-		void setStatusBar(SB_Y eY, SB_X eX, const std::string& strMessage);
+		void setStatusBar(SB_Y eY, SB_X eX, const std::string& strMessage,
+			int cursor);
 		void gotoxy(int x, int y);
 		void putstr(const std::string& strContent);
 		void getContentDims(int *iWidth, int *iHeight);
 		void scrollContent(int iX, int iY);
 		void eraseToEOL(void);
 		void cursor(bool visible);
-		std::string getString(const std::string& strPrompt, int maxLen);
 		void setColoursFromConfig();
 
 	protected:
@@ -110,8 +104,7 @@ class XConsole: virtual public IConsole
 		/**
 		 * This writes anywhere on the screen, including on the status bars.
 		 *
-		 * @pre The text can overlap onto the next line, but it must not run
-		 *   off the edge of the screen.
+		 * @note The text will not overlap onto the next line.
 		 *
 		 * @param x
 		 *   X-coordinate where the first character will appear.
@@ -121,8 +114,11 @@ class XConsole: virtual public IConsole
 		 *
 		 * @param strContent
 		 *   The text to draw.
+		 *
+		 * @return The number of characters written, possibly less than the content
+		 *   if it would've run over the line or past the end of the screen.
 		 */
-		void writeText(int x, int y, const std::string& strContent);
+		unsigned int writeText(int x, int y, const std::string& strContent);
 };
 
 #endif // XCONSOLE_HPP_

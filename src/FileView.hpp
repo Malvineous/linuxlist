@@ -2,7 +2,7 @@
  * @file   FileView.hpp
  * @brief  IView interface for a file viewer.
  *
- * Copyright (C) 2009-2010 Adam Nielsen <malvineous@shikadi.net>
+ * Copyright (C) 2009-2012 Adam Nielsen <malvineous@shikadi.net>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,9 +21,8 @@
 #ifndef FILEVIEW_HPP_
 #define FILEVIEW_HPP_
 
-#include <fstream> // for off_type
-#include <sstream>
 #include <string>
+#include <camoto/stream.hpp>
 #include <camoto/bitstream.hpp>
 #include "IView.hpp"
 #include "IConsole.hpp"
@@ -35,19 +34,8 @@
  */
 class FileView: virtual public IView
 {
-	protected:
-		std::string strFilename;  ///< Filename of open file
-		camoto::bitstream file;   ///< Bitstream for reading data from file
-		IConsole *pConsole;       ///< Console used for drawing content
-		bool bStatusAlertVisible; ///< true if an alert is visible in the status bar
-		int bitWidth;             ///< Number of bits in each char/cell
-		int intraByteOffset;      ///< Bit-level seek offset within cell (0..bitWidth-1)
-
-		camoto::stream::pos iOffset; ///< Offset into file of first character in content window
-		camoto::stream::pos iFileSize; ///< Length of input stream
-
 	public:
-		/// Constructor
+		/// Constructor.
 		/**
 		 * @param strFilename
 		 *   Filename of data being displayed.  Shown in header.
@@ -64,12 +52,20 @@ class FileView: virtual public IView
 		FileView(std::string strFilename, camoto::stream::inout_sptr data,
 			IConsole *pConsole);
 
+		/// Copy constructor.
+		/**
+		 * This allows creating an identical view of a file.  Descendent classes
+		 * can use this to switch between views of the same file at the same
+		 * seek location (e.g. plain text and hex views.)
+		 */
 		FileView(const FileView& parent);
 
-		/// Destructor
-		~FileView();
+		virtual ~FileView();
 
-		void init();
+		virtual void init();
+		void updateTextEntry(const std::string& prompt, const std::string& text,
+			unsigned int pos);
+		void clearTextEntry();
 
 		/// Set an alert message on the status bar.
 		/**
@@ -87,6 +83,9 @@ class FileView: virtual public IView
 		/// Set the size of each cell in bits.
 		/**
 		 * When this is set to eight, a normal byte-level view will be shown.
+		 *
+		 * @param newWidth
+		 *   Width of bits to show in each byte/cell.
 		 */
 		void setBitWidth(int newWidth);
 
@@ -97,8 +96,24 @@ class FileView: virtual public IView
 		 * the file will be discarded and the following eight bits (last seven
 		 * bits in the first input byte, and first bit in the second input byte)
 		 * will appear as the first byte on the screen.
+		 *
+		 * @pre delta must be less than the value passed to setBitWidth().
+		 *
+		 * @param delta
+		 *   Number of bits to seek/offset.
 		 */
 		void setIntraByteOffset(int delta);
+
+	protected:
+		std::string strFilename;  ///< Filename of open file
+		camoto::bitstream file;   ///< Bitstream for reading data from file
+		IConsole *pConsole;       ///< Console used for drawing content
+		bool bStatusAlertVisible; ///< true if an alert is visible in the status bar
+		int bitWidth;             ///< Number of bits in each char/cell
+		int intraByteOffset;      ///< Bit-level seek offset within cell (0..bitWidth-1)
+
+		camoto::stream::pos iOffset; ///< Offset into file of first character in content window
+		camoto::stream::pos iFileSize; ///< Length of input stream
 };
 
 #endif // FILEVIEW_HPP_

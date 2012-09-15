@@ -18,7 +18,6 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <errno.h>
 #include "TextView.hpp"
 #include "HexView.hpp"
 #include "HelpView.hpp"
@@ -144,8 +143,8 @@ bool TextView::processKey(Key c)
 			break;
 		}
 		case Key_F1: {
-			IViewPtr newView(new HelpView(shared_from_this(), this->pConsole));
-			this->pConsole->setView(newView);
+			IViewPtr newView(new HelpView(this->pConsole));
+			this->pConsole->pushView(newView);
 			break;
 		}
 		default: break;

@@ -1,6 +1,7 @@
 bin_PROGRAMS = ll
 
 ll_SOURCES = main.cpp
+ll_SOURCES += BaseConsole.cpp
 ll_SOURCES += font.cpp
 ll_SOURCES += FileView.cpp
 ll_SOURCES += HexView.cpp
@@ -17,6 +18,7 @@ endif
 
 # Base files
 EXTRA_ll_SOURCES = cfg.hpp
+EXTRA_ll_SOURCES += BaseConsole.hpp
 EXTRA_ll_SOURCES += IConsole.hpp
 EXTRA_ll_SOURCES += font.hpp
 EXTRA_ll_SOURCES += IView.hpp

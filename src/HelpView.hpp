@@ -22,22 +22,20 @@
 #define HELPVIEW_HPP_
 
 #include <sstream>
-#include <boost/shared_ptr.hpp>
 #include "TextView.hpp"
 
 /// Help screen.
 class HelpView: public TextView
 {
-	private:
-		static std::stringstream ss;
-		IViewPtr oldView;
-
 	public:
-		HelpView(IViewPtr oldView, IConsole *pConsole);
+		HelpView(IConsole *pConsole);
 		~HelpView();
 
 		bool processKey(Key c);
 		void generateHeader(std::ostringstream& ss);
+
+	protected:
+		static std::stringstream ss;
 };
 
 #endif // HELPVIEW_HPP_

@@ -21,12 +21,13 @@
 #ifndef IVIEW_HPP_
 #define IVIEW_HPP_
 
+#include <vector>
 #include <boost/shared_ptr.hpp>
-#include <boost/enable_shared_from_this.hpp>
 
 /// Keycode definitions.  Values < 256 are ASCII values.
 enum Key {
 	Key_None = 0,
+	Key_Backspace = 8,
 	Key_Enter = 13,
 	Key_Up = 256,
 	Key_Down,
@@ -36,6 +37,7 @@ enum Key {
 	Key_PageDown,
 	Key_Home,
 	Key_End,
+	Key_Del,
 	Key_Esc,
 	Key_Tab,
 	Key_F1,
@@ -50,7 +52,7 @@ enum Key {
 #define ALT(k)   (k | Key_Alt)
 
 /// Something to display on the screen (file content, directory browser, etc.)
-class IView: public boost::enable_shared_from_this<IView>
+class IView
 {
 	public:
 
@@ -82,8 +84,26 @@ class IView: public boost::enable_shared_from_this<IView>
 		 */
 		virtual void redrawScreen() = 0;
 
+		/// Display the text currently being entered by the user.
+		/**
+		 * @param prompt
+		 *   Purpose for collecting this text, to show to the user.
+		 *
+		 * @param text
+		 *   Text to display.
+		 *
+		 * @param pos
+		 *   Location to display the cursor.  0 is over the first char.
+		 */
+		virtual void updateTextEntry(const std::string& prompt,
+			const std::string& text, unsigned int pos) = 0;
+
+		/// Clear any prompt used to collect text entry from the user.
+		virtual void clearTextEntry() = 0;
+
 };
 
 typedef boost::shared_ptr<IView> IViewPtr;
+typedef std::vector<IViewPtr> ViewVector;
 
 #endif // IVIEW_HPP_

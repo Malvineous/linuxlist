@@ -66,14 +66,26 @@ XConsole::XConsole(Display *display)
 	this->pixels[0] = -1;
 	this->setColoursFromConfig();
 
-	this->win = XCreateSimpleWindow(this->display,
+	XSetWindowAttributes attr;
+	this->win = XCreateWindow(this->display,
 		DefaultRootWindow(this->display),
 		0, 0,
 		this->screenWidth * this->fontWidth,
 		this->screenHeight * this->fontHeight,
-		0, 0,
-		BlackPixel(this->display, screen) // default BG
-	);
+		0,
+		CopyFromParent, CopyFromParent, CopyFromParent,
+		0, &attr);
+
+	XSizeHints *sh = XAllocSizeHints();
+	if (sh) {
+		sh->flags = PMinSize | PResizeInc;
+		sh->min_width = 16 * this->fontWidth;
+		sh->min_height = 4 * this->fontHeight;
+		sh->width_inc = this->fontWidth;
+		sh->height_inc = this->fontHeight;
+		XSetWMNormalHints(this->display, this->win, sh);
+		XFree(sh);
+	}
 
 	this->gc = XCreateGC(this->display, this->win, 0, 0);
 
@@ -119,89 +131,111 @@ XConsole::~XConsole()
 	XFreeColors(this->display, cmap, this->pixels, PX_TOTAL, 0);
 }
 
-void XConsole::setView(IViewPtr pView)
-{
-	this->nextView = pView;
-	return;
-}
-
 void XConsole::mainLoop()
 {
-	assert(this->nextView);
-	Key c;
 	XEvent ev;
+	int newWidth = 0, newHeight = 0;
+	bool running = true, redraw = false;
 	do {
-		c = Key_None;
-		if (this->nextView) {
-			this->pView = this->nextView;
-			this->nextView.reset();
-			this->pView->init();
-			this->pView->redrawScreen();
-			this->update();
-		}
+		// Wait for the next event
+		XPeekEvent(this->display, &ev);
 
-		if (XNextEvent(this->display, &ev) < 0) break;
-		switch (ev.type) {
-			case Expose:
-				this->redrawCells(
-					ev.xexpose.x / this->fontWidth,
-					ev.xexpose.y / this->fontHeight,
-					(ev.xexpose.x + ev.xexpose.width + this->fontWidth - 1) / this->fontWidth,
-					(ev.xexpose.y + ev.xexpose.height + this->fontHeight - 1) / this->fontHeight,
-					false // draw all cells, even unchanged ones
-				);
-				break;
-			case KeymapNotify:
-				XRefreshKeyboardMapping(&ev.xmapping);
-				break;
-			case KeyPress: {
-				char ch[32];
-				KeySym sym;
-				int len = XLookupString(&ev.xkey, ch, sizeof(ch), &sym, NULL);
-				switch (sym) {
-					//case XK_BackSpace:
-					case XK_Tab:       c = Key_Tab; break;
-					//case XK_Return:    c = Key_Enter; break;
-					case XK_Escape:    c = Key_Esc; break;
-					case XK_Home:      c = Key_Home; break;
-					case XK_Left:      c = Key_Left; break;
-					case XK_Up:        c = Key_Up; break;
-					case XK_Right:     c = Key_Right; break;
-					case XK_Down:      c = Key_Down; break;
-					case XK_Page_Up:   c = Key_PageUp; break;
-					case XK_Page_Down: c = Key_PageDown; break;
-					case XK_End:       c = Key_End; break;
-					case XK_F1:        c = Key_F1; break;
-					case XK_F10:       c = Key_F10; break;
-					default:
-						if (len == 1) c = (Key)ch[0];
-						else c = Key_None;
-						break;
+		while (XCheckMaskEvent(this->display, KeyPressMask | ExposureMask | StructureNotifyMask, &ev)) {
+			switch (ev.type) {
+				case Expose:
+					if (!(newWidth || newHeight)) {
+						this->redrawCells(
+							ev.xexpose.x / this->fontWidth,
+							ev.xexpose.y / this->fontHeight,
+							(ev.xexpose.x + ev.xexpose.width + this->fontWidth - 1) / this->fontWidth,
+							(ev.xexpose.y + ev.xexpose.height + this->fontHeight - 1) / this->fontHeight,
+							false // draw all cells, even unchanged ones
+						);
+					}
+					break;
+				case KeymapNotify:
+					XRefreshKeyboardMapping(&ev.xmapping);
+					break;
+				case KeyPress: {
+					Key c;
+					char ch[32];
+					KeySym sym;
+					int len = XLookupString(&ev.xkey, ch, sizeof(ch), &sym, NULL);
+					switch (sym) {
+						case XK_Tab:          c = Key_Tab; break;
+						case XK_KP_Enter:     c = Key_Enter; break;
+						case XK_Escape:       c = Key_Esc; break;
+						case XK_Up:           c = Key_Up; break;
+						case XK_Down:         c = Key_Down; break;
+						case XK_Left:         c = Key_Left; break;
+						case XK_Right:        c = Key_Right; break;
+						case XK_Home:         c = Key_Home; break;
+						case XK_End:          c = Key_End; break;
+						case XK_Page_Up:      c = Key_PageUp; break;
+						case XK_Page_Down:    c = Key_PageDown; break;
+						case XK_Delete:       c = Key_Del; break;
+						case XK_KP_Up:        c = Key_Up; break;
+						case XK_KP_Down:      c = Key_Down; break;
+						case XK_KP_Left:      c = Key_Left; break;
+						case XK_KP_Right:     c = Key_Right; break;
+						case XK_KP_Home:      c = Key_Home; break;
+						case XK_KP_End:       c = Key_End; break;
+						case XK_KP_Page_Up:   c = Key_PageUp; break;
+						case XK_KP_Page_Down: c = Key_PageDown; break;
+						case XK_KP_Delete:    c = Key_Del; break;
+						case XK_F1:           c = Key_F1; break;
+						case XK_F10:          c = Key_F10; break;
+						default:
+							if (len == 1) c = (Key)ch[0];
+							else c = Key_None;
+							break;
+					}
+					if (ev.xkey.state & Mod1Mask) c = (Key)(c | Key_Alt);
+					running = this->processKey(c);
+					break;
 				}
-				if (ev.xkey.state & Mod1Mask) c = (Key)(c | Key_Alt);
-				break;
-			}
-			case ConfigureNotify: {
-				int newWidth = ev.xconfigure.width / this->fontWidth;
-				int newHeight = ev.xconfigure.height / this->fontHeight;
-				if ((this->screenWidth != newWidth) || (this->screenHeight != newHeight)) {
-					this->screenWidth = newWidth;
-					this->screenHeight = newHeight;
-					delete[] this->text;
-					delete[] this->changed;
-					int screensize = newWidth * newHeight;
-					this->text    = new uint8_t[screensize];
-					this->changed = new uint8_t[screensize];
-					memset(this->text,    0, screensize);
-					memset(this->changed, 1, screensize);
-					this->pView->init();
-					this->pView->redrawScreen();
+				case ConfigureNotify: {
+					int width = ev.xconfigure.width / this->fontWidth;
+					int height = ev.xconfigure.height / this->fontHeight;
+					if (
+						((newWidth == 0) && (this->screenWidth != width))
+						|| ((newWidth != 0) && (newWidth != width))
+						|| ((newHeight == 0) && (this->screenHeight != height))
+						|| ((newHeight != 0) && (newHeight != height))
+					) {
+						newWidth = width;
+						newHeight = height;
+					}
+					break;
 				}
-				break;
 			}
 		}
-	} while (this->pView->processKey(c));
+		// No more events waiting, do the time consuming things
+		if (newWidth || newHeight) {
+			int screensize = newWidth * newHeight;
+			if (screensize > this->screenWidth * this->screenHeight) {
+				delete[] this->text;
+				delete[] this->changed;
+				this->text    = new uint8_t[screensize];
+				this->changed = new uint8_t[screensize];
+			}
+			memset(this->text,    0, screensize);
+			memset(this->changed, 1, screensize);
+			this->screenWidth = newWidth;
+			this->screenHeight = newHeight;
+			this->view->init();
+			this->view->redrawScreen();
 
+			this->redrawCells(
+				0,
+				0,
+				this->screenWidth,
+				this->screenHeight,
+				false // draw all cells, even unchanged ones
+			);
+			newWidth = newHeight = 0;
+		}
+	} while (running);
 	return;
 }
 
@@ -219,7 +253,8 @@ void XConsole::clearStatusBar(SB_Y eY)
 	return;
 }
 
-void XConsole::setStatusBar(SB_Y eY, SB_X eX, const std::string& strMessage)
+void XConsole::setStatusBar(SB_Y eY, SB_X eX, const std::string& strMessage,
+	int cursor)
 {
 	int x;
 	switch (eX) {
@@ -237,6 +272,18 @@ void XConsole::setStatusBar(SB_Y eY, SB_X eX, const std::string& strMessage)
 		default: // SB_TOP
 			y = 0;
 			break;
+	}
+	if (x < 0) return; // right-justified long text in a short window
+	if ((cursor >= 0) && (cursor <= strMessage.length())) {
+		if (this->cursorVisible) {
+			// Remove the cursor from its current location
+			this->changed[this->cursorY * this->screenWidth + this->cursorX] = 1;
+		}
+		this->cursorX = x + cursor;
+		this->cursorY = y;
+		if (this->cursorVisible) {
+			this->changed[this->cursorY * this->screenWidth + this->cursorX] = 1;
+		}
 	}
 	this->writeText(x, y, strMessage);
 	return;
@@ -257,10 +304,8 @@ void XConsole::gotoxy(int x, int y)
 
 void XConsole::putstr(const std::string& strContent)
 {
-	int len = strContent.length();
-	this->writeText(this->cursorX, this->cursorY, strContent);
-	this->cursorX += len % this->screenWidth;
-	this->cursorY += len / this->screenWidth;
+	int len = this->writeText(this->cursorX, this->cursorY, strContent);
+	this->cursorX += len; // could put this->cursorX == this->screenWidth
 	return;
 }
 
@@ -309,13 +354,6 @@ void XConsole::cursor(bool visible)
 	this->redrawCells(this->cursorX, this->cursorY,
 		this->cursorX + 1, this->cursorY + 1, false);
 	return;
-}
-
-std::string XConsole::getString(const std::string& strPrompt, int maxLen)
-{
-	std::string s;
-	// TODO
-	return s;
 }
 
 void XConsole::setColoursFromConfig()
@@ -399,19 +437,23 @@ void XConsole::redrawCells(int startX, int startY, int endX, int endY,
 	return;
 }
 
-void XConsole::writeText(int x, int y, const std::string& strContent)
+unsigned int XConsole::writeText(int x, int y, const std::string& strContent)
 {
-	// Make sure this won't write past the end of the screen
-	assert(y * this->screenWidth + x +
-		strContent.length() <= this->screenWidth * this->screenHeight);
+	if (y >= this->screenHeight) return 0;
+	if (x >= this->screenWidth) return 0;
+
+	uint8_t *lineEnd = this->text + (y+1) * this->screenWidth;
 
 	int offset = y * this->screenWidth + x;
 	uint8_t *start  = this->text    + offset;
 	uint8_t *cstart = this->changed + offset;
-	for (std::string::const_iterator i = strContent.begin(); i != strContent.end(); i++) {
+	unsigned int len = 0;
+	for (std::string::const_iterator
+		i = strContent.begin(); (i != strContent.end()) && (start < lineEnd); i++
+	) {
 		*start++ = *i;
 		*cstart++ = 1;
+		len++;
 	}
-	return;
+	return len;
 }
-

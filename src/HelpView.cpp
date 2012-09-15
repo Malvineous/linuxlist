@@ -94,9 +94,8 @@ struct helpContent {
 };
 helpContent help;
 
-HelpView::HelpView(IViewPtr oldView, IConsole *pConsole)
-	:	TextView("Help (F10 to exit)", ::help.contentStream, pConsole),
-		oldView(oldView)
+HelpView::HelpView(IConsole *pConsole)
+	:	TextView("Help (F10 to exit)", ::help.contentStream, pConsole)
 {
 }
 
@@ -112,7 +111,7 @@ bool HelpView::processKey(Key c)
 		case Key_Esc:
 		case Key_F10:
 		case 'q':
-			this->pConsole->setView(this->oldView);
+			this->pConsole->popView();
 			break;
 
 		// These keys are passed through to the text view and processed as usual.

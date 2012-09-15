@@ -18,6 +18,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <sstream>
 #include "FileView.hpp"
 
 FileView::FileView(std::string strFilename, camoto::stream::inout_sptr data,
@@ -52,9 +53,29 @@ FileView::~FileView()
 void FileView::init()
 {
 	this->pConsole->clearStatusBar(SB_TOP);
-	this->pConsole->setStatusBar(SB_TOP, SB_LEFT, this->strFilename);
+	this->pConsole->setStatusBar(SB_TOP, SB_LEFT, this->strFilename,
+		SB_NO_CURSOR_MOVE);
 	this->bStatusAlertVisible = true; // force redraw
 	this->statusAlert(NULL); // draw the bottom status bar with no alert
+}
+
+void FileView::updateTextEntry(const std::string& prompt,
+	const std::string& text, unsigned int pos)
+{
+	this->pConsole->clearStatusBar(SB_BOTTOM);
+	this->pConsole->setStatusBar(SB_BOTTOM, SB_LEFT, prompt + "> " + text,
+		prompt.length() + 2 + pos);
+	this->pConsole->cursor(true);
+	return;
+}
+
+void FileView::clearTextEntry()
+{
+	this->pConsole->cursor(false);
+	// Reset status bar to hide prompt
+	this->bStatusAlertVisible = true;
+	this->statusAlert(NULL);
+	return;
 }
 
 void FileView::statusAlert(const char *cMsg)
@@ -66,13 +87,16 @@ void FileView::statusAlert(const char *cMsg)
 	this->pConsole->clearStatusBar(SB_BOTTOM);
 
 	// Reset the right-hand side after we've blanked it
-	this->pConsole->setStatusBar(SB_BOTTOM, SB_RIGHT, "F1=help");
+	this->pConsole->setStatusBar(SB_BOTTOM, SB_RIGHT, "F1=help",
+		SB_NO_CURSOR_MOVE);
 
 	if (cMsg) {
-		this->pConsole->setStatusBar(SB_BOTTOM, SB_LEFT, std::string("Command>  *** ") + cMsg + " *** ");
+		this->pConsole->setStatusBar(SB_BOTTOM, SB_LEFT, std::string("Command>  *** ") + cMsg + " *** ",
+			SB_NO_CURSOR_MOVE);
 		this->bStatusAlertVisible = true;
 	} else {
-		this->pConsole->setStatusBar(SB_BOTTOM, SB_LEFT, "Command> ");
+		this->pConsole->setStatusBar(SB_BOTTOM, SB_LEFT, "Command> ",
+			SB_NO_CURSOR_MOVE);
 		this->bStatusAlertVisible = false;
 	}
 	return;
@@ -97,7 +121,7 @@ void FileView::updateHeader()
 {
 	std::ostringstream ss;
 	this->generateHeader(ss);
-	this->pConsole->setStatusBar(SB_TOP, SB_RIGHT, ss.str());
+	this->pConsole->setStatusBar(SB_TOP, SB_RIGHT, ss.str(), SB_NO_CURSOR_MOVE);
 	return;
 }
 

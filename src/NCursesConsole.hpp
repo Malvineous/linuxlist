@@ -38,19 +38,17 @@
 #endif
 
 #include <iconv.h>
-#include "IConsole.hpp"
+#include "BaseConsole.hpp"
 
 /// Console interface to a standard terminal using ncurses for control codes.
-class NCursesConsole: virtual public IConsole
+class NCursesConsole: virtual public BaseConsole
 {
 	private:
-		IViewPtr pView;         ///< Current view in use
-		IViewPtr nextView;      ///< If non-NULL, next view to replace pView
-
 		// The status bars need to be separate windows, otherwise updating them
 		// will overwrite the content window!
 		WINDOW *winStatus[2]; ///< Status bars (0 == top, 1 == bottom)
 		WINDOW *winContent;   ///< Main display area (between the status bars)
+		bool cursorInWindow;  ///< false if the cursor is in the bottom status bar
 
 		int maxLineLen;  ///< Maximum length of a single line (will expand as necessary)
 
@@ -63,20 +61,19 @@ class NCursesConsole: virtual public IConsole
 
 	public:
 		NCursesConsole(void);
-		~NCursesConsole();
+		virtual ~NCursesConsole();
 
-		void setView(IViewPtr pView);
 		void mainLoop();
 		void update(void);
 		void clearStatusBar(SB_Y eY);
-		void setStatusBar(SB_Y eY, SB_X eX, const std::string& strMessage);
+		void setStatusBar(SB_Y eY, SB_X eX, const std::string& strMessage,
+			int cursor);
 		void gotoxy(int x, int y);
 		void putstr(const std::string& strContent);
 		void getContentDims(int *iWidth, int *iHeight);
 		void scrollContent(int iX, int iY);
 		void eraseToEOL(void);
 		void cursor(bool visible);
-		std::string getString(const std::string& strPrompt, int maxLen);
 		void setColoursFromConfig();
 };
 

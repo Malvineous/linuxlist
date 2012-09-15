@@ -18,7 +18,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <errno.h>
+#include <iomanip>
 #include "HexView.hpp"
 #include "TextView.hpp"
 #include "HelpView.hpp"
@@ -82,8 +82,8 @@ bool HexView::processKey(Key c)
 		case Key_PageDown: this->scrollRel(this->iLineWidth*iHeight); break;
 		case CTRL('L'): this->redrawScreen(); break;
 		case Key_F1: {
-			IViewPtr newView(new HelpView(shared_from_this(), this->pConsole));
-			this->pConsole->setView(newView);
+			IViewPtr newView(new HelpView(this->pConsole));
+			this->pConsole->pushView(newView);
 			break;
 		}
 	}
@@ -394,12 +394,14 @@ void HexView::adjustLineWidth(int delta)
 
 	int newWidth = this->iLineWidth + delta;
 	if (newWidth < 1) newWidth = 1;
+/*
 	// Width required to display a single byte of data (hex digits + binary), e.g.
 	// 4 chars per byte by default (hex, hex, space and binary)
 	int byteWidth = 2 + CALC_HEXCELL_WIDTH; // 2 == binary + space
 	int maxWidth = (iWidth - 11) / byteWidth;
 	maxWidth -= 0.5 + maxWidth / (8 * 4); // plus an extra space every 8 chars (have to *4 to cancel out the /4 above)
 	if (newWidth > maxWidth) newWidth = maxWidth;
+*/
 	if (this->iLineWidth != newWidth) {
 		this->iLineWidth = newWidth;
 		if (this->iLineWidth > this->iLineAlloc) {
@@ -574,16 +576,23 @@ void HexView::gotoOffset()
 	this->bStatusAlertVisible = true;
 	this->statusAlert(NULL);
 
-	// Get value and scroll if ok
-	const char *nptr = val.c_str();
-	char *endptr;
-	unsigned long off = strtoul(nptr, &endptr, 0);
-	if (
-		(endptr != nptr) &&  // if text was entered, and
-		(*endptr  == '\0')   // it was all valid
-	) {
-		// Perform the jump
-		this->scrollAbs(off);
+	if (val.length() > 0) {
+		// Get value and scroll if ok
+		const char *nptr = val.c_str();
+		char *endptr;
+		bool relative = (*nptr == '+') || (*nptr == '-');
+		long off = strtol(nptr, &endptr, 0);
+		if (
+			(endptr != nptr) &&  // if text was entered, and
+			(*endptr  == '\0')   // it was all valid
+		) {
+			// Perform the jump
+			if (relative) {
+				this->scrollRel(off);
+			} else {
+				this->scrollAbs(off);
+			}
+		}
 	}
 
 	// The cursor is turned on for the prompt, then turned off afterwards, so

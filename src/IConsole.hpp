@@ -37,16 +37,39 @@ enum SB_X {
 	SB_RIGHT
 };
 
+const int SB_NO_CURSOR_MOVE = -1;
+
 /// Interface class to the UI.
 class IConsole
 {
 	public:
+		virtual ~IConsole(); // implemented in main.cpp
+
 		/// Set the view that will be shown in this console.
 		/**
 		 * @param pView
 		 *   IView to pass keypress events to.
+		 *
+		 * @note This must not invalidate the current view, as the current view is
+		 *   likely the caller of this function, and must remain valid so there is
+		 *   somewhere to go when this function returns.
 		 */
-		virtual void setView(IViewPtr pView) = 0;
+		virtual void setView(IViewPtr newView) = 0;
+
+		/// Temporarily set the view that will be shown in this console.
+		/**
+		 * Use popView() to restore the previous view.
+		 *
+		 * @param newView
+		 *   IView to pass keypress events to.
+		 */
+		virtual void pushView(IViewPtr newView) = 0;
+
+		/// Restore the view to what it was previously.
+		/**
+		 * Restore the view in use before the last call to pushView().
+		 */
+		virtual void popView() = 0;
 
 		/// Main loop for reading keystrokes and passing actions to the view.
 		/**
@@ -75,8 +98,16 @@ class IConsole
 		 *
 		 * @param strMessage
 		 *   Text to show.
+		 *
+		 * @param cursor
+		 *   Cursor behaviour.  0 = put cursor on first letter of strMessage, 1 =
+		 *   second letter, etc. -1 = do not move cursor.
+		 *
+		 * @note If cursor is >= 0 it will be moved, but it will not be made visible
+		 *   if it is currently hidden.
 		 */
-		virtual void setStatusBar(SB_Y eY, SB_X eX, const std::string& strMessage) = 0;
+		virtual void setStatusBar(SB_Y eY, SB_X eX, const std::string& strMessage,
+			int cursor) = 0;
 
 		//
 		// Display routines

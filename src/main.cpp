@@ -2,7 +2,7 @@
  * @file   main.cpp
  * @brief  Entry for Linux List.
  *
- * Copyright (C) 2009-2010 Adam Nielsen <malvineous@shikadi.net>
+ * Copyright (C) 2009-2012 Adam Nielsen <malvineous@shikadi.net>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,10 +18,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <config.h>
-
-#include <camoto/stream_file.hpp>
+#include <stdlib.h>
+#include <fstream>
 #include <iostream>
+#include <camoto/stream_file.hpp>
+#include <config.h>
 #include "cfg.hpp"
 
 #ifdef HAVE_NCURSESW
@@ -38,6 +39,10 @@
 Config cfg;
 
 typedef unsigned char byte;
+
+IConsole::~IConsole()
+{
+}
 
 bool readConfig(std::iostream& config)
 {
@@ -113,7 +118,7 @@ int main(int iArgC, char *cArgV[])
 			break;
 	}
 
-	pConsole->setView(pView); // pConsole now owns pView (so we don't delete it)
+	pConsole->setView(pView);
 	pConsole->mainLoop();
 
 	delete pConsole;

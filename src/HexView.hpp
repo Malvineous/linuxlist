@@ -2,7 +2,7 @@
  * @file   HexView.hpp
  * @brief  IView implementation for a hex editor view.
  *
- * Copyright (C) 2009-2010 Adam Nielsen <malvineous@shikadi.net>
+ * Copyright (C) 2009-2012 Adam Nielsen <malvineous@shikadi.net>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,9 +21,6 @@
 #ifndef HEXVIEW_HPP_
 #define HEXVIEW_HPP_
 
-#include <config.h>
-
-#include <iomanip>
 #include "FileView.hpp"
 
 /// Hex editor view.
@@ -46,13 +43,10 @@ class HexView: public FileView
 	public:
 		HexView(std::string strFilename, camoto::stream::inout_sptr data,
 			IConsole *pConsole);
-
 		HexView(const FileView& parent);
-
 		~HexView();
 
 		bool processKey(Key c);
-
 		void redrawScreen();
 
 		void generateHeader(std::ostringstream& ss);
