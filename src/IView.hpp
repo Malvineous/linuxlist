@@ -2,7 +2,7 @@
  * @file   IView.hpp
  * @brief  Interface class for a 'view' - something to show on the screen.
  *
- * Copyright (C) 2009-2010 Adam Nielsen <malvineous@shikadi.net>
+ * Copyright (C) 2009-2012 Adam Nielsen <malvineous@shikadi.net>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -64,8 +64,7 @@ class IView: public boost::enable_shared_from_this<IView>
 		 * Note this function may be called multiple times if the view has been
 		 * deactivated and later reactivated again.
 		 */
-		virtual void init()
-			throw () = 0;
+		virtual void init() = 0;
 
 		/// Process the given key.
 		/**
@@ -74,16 +73,14 @@ class IView: public boost::enable_shared_from_this<IView>
 		 *
 		 * @return true to keep going, false to quit.
 		 */
-		virtual bool processKey(Key c)
-			throw () = 0;
+		virtual bool processKey(Key c) = 0;
 
 		/// Regenerate the entire content on the display.
 		/**
 		 * This is normally only called after a change that affects the entire
 		 * display, e.g. a change in the number of bits shown per byte.
 		 */
-		virtual void redrawScreen()
-			throw () = 0;
+		virtual void redrawScreen() = 0;
 
 };
 

@@ -2,7 +2,7 @@
  * @file   TextView.hpp
  * @brief  IView implementation for a text view.
  *
- * Copyright (C) 2009-2010 Adam Nielsen <malvineous@shikadi.net>
+ * Copyright (C) 2009-2012 Adam Nielsen <malvineous@shikadi.net>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -42,32 +42,19 @@ class TextView: public FileView
 		std::vector<int> linePos; ///< List of offsets where each line begins
 		bool cacheComplete;       ///< True if linePos covers the entire file
 
-
 	public:
 		TextView(std::string strFilename, camoto::stream::inout_sptr file,
-			IConsole *pConsole)
-			throw ();
+			IConsole *pConsole);
 
-		TextView(const FileView& parent)
-			throw ();
+		TextView(const FileView& parent);
+		~TextView();
 
-		~TextView()
-			throw ();
+		bool processKey(Key c);
+		void redrawScreen();
+		void generateHeader(std::ostringstream& ss);
 
-		bool processKey(Key c)
-			throw ();
-
-		void redrawScreen()
-			throw ();
-
-		void generateHeader(std::ostringstream& ss)
-			throw ();
-
-		void setBitWidth(int newWidth)
-			throw ();
-
-		void setIntraByteOffset(int delta)
-			throw ();
+		void setBitWidth(int newWidth);
+		void setIntraByteOffset(int delta);
 
 		/// Scroll vertically by this number of lines.
 		/**
@@ -76,8 +63,7 @@ class TextView: public FileView
 		 *   scroll forward one byte.  -this->iLineWidth will scroll up one line,
 		 *   +this->iLineWidth will scroll down one line.
 		 */
-		void scrollLines(int iDelta)
-			throw ();
+		void scrollLines(int iDelta);
 
 		/// Redraw part of the screen.
 		/**
@@ -90,8 +76,7 @@ class TextView: public FileView
 		 * @param width
 		 *   Current console width.
 		 */
-		void redrawLines(int iTop, int iBottom, int width)
-			throw ();
+		void redrawLines(int iTop, int iBottom, int width);
 
 		/// Display the file data (starting at the current offset) in the content
 		/// window.
@@ -108,8 +93,7 @@ class TextView: public FileView
 		 * @param iLen
 		 *   Line length/length of pData
 		 */
-		void drawLine(int iLine, unsigned long iOffset, const int *pData, int iLen)
-			throw ();
+		void drawLine(int iLine, unsigned long iOffset, const int *pData, int iLen);
 
 		/// Populate linePos with offsets of each line from 0 to maxLine.
 		/**
@@ -120,9 +104,7 @@ class TextView: public FileView
 		 * @param width
 		 *   Width of output console (for wrapping long lines)
 		 */
-		void cacheLines(int maxLine, int width)
-			throw ();
-
+		void cacheLines(int maxLine, int width);
 };
 
 #endif // TEXTVIEW_HPP_

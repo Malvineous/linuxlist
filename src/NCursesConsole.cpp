@@ -72,8 +72,7 @@ wchar_t ctl_utf8[] = {
 const wchar_t ctl_utf8_0x7f = 0x2302;
 
 NCursesConsole::NCursesConsole(void)
-	throw () :
-		maxLineLen(80)
+	:	maxLineLen(80)
 {
 	// Init iconv
 	setlocale(LC_ALL, ""); // set locale based on LANG env var
@@ -122,7 +121,6 @@ NCursesConsole::NCursesConsole(void)
 }
 
 NCursesConsole::~NCursesConsole()
-	throw ()
 {
 	delwin(this->winContent);
 
@@ -133,14 +131,12 @@ NCursesConsole::~NCursesConsole()
 }
 
 void NCursesConsole::setView(IViewPtr pView)
-	throw ()
 {
 	this->nextView = pView;
 	return;
 }
 
 void NCursesConsole::mainLoop()
-	throw ()
 {
 	assert(this->nextView);
 	Key c;
@@ -191,7 +187,6 @@ void NCursesConsole::mainLoop()
 }
 
 void NCursesConsole::update(void)
-	throw ()
 {
 	wnoutrefresh(this->winStatus[0]);
 	wnoutrefresh(this->winStatus[1]);
@@ -201,7 +196,6 @@ void NCursesConsole::update(void)
 }
 
 void NCursesConsole::clearStatusBar(SB_Y eY)
-	throw ()
 {
 	// Erasing the line avoids the entire screen flickering as it does if we
 	// use wclear() instead.
@@ -211,7 +205,6 @@ void NCursesConsole::clearStatusBar(SB_Y eY)
 }
 
 void NCursesConsole::setStatusBar(SB_Y eY, SB_X eX, const std::string& strMessage)
-	throw ()
 {
 	switch (eX) {
 		case SB_LEFT:   wmove(this->winStatus[eY], 0, 0); break;
@@ -223,14 +216,12 @@ void NCursesConsole::setStatusBar(SB_Y eY, SB_X eX, const std::string& strMessag
 }
 
 void NCursesConsole::gotoxy(int x, int y)
-	throw ()
 {
 	wmove(this->winContent, y, x);
 	return;
 }
 
 void NCursesConsole::putstr(const std::string& strContent)
-	throw ()
 {
 	if (this->cd != (iconv_t)-1) {
 		// iconv is valid, convert
@@ -269,35 +260,30 @@ void NCursesConsole::putstr(const std::string& strContent)
 }
 
 void NCursesConsole::getContentDims(int *iWidth, int *iHeight)
-	throw ()
 {
 	getmaxyx(this->winContent, *iHeight, *iWidth);
 	return;
 }
 
 void NCursesConsole::scrollContent(int iX, int iY)
-	throw ()
 {
 	wscrl(this->winContent, iY);
 	return;
 }
 
 void NCursesConsole::eraseToEOL(void)
-	throw ()
 {
 	wclrtoeol(this->winContent);
 	return;
 }
 
 void NCursesConsole::cursor(bool visible)
-	throw ()
 {
 	curs_set(visible ? 1 : 0);
 	return;
 }
 
 std::string NCursesConsole::getString(const std::string& strPrompt, int maxLen)
-	throw ()
 {
 	wmove(this->winStatus[SB_BOTTOM], 0, 0);
 	waddstr(this->winStatus[SB_BOTTOM], strPrompt.c_str());
@@ -332,7 +318,6 @@ std::string NCursesConsole::getString(const std::string& strPrompt, int maxLen)
 }
 
 void NCursesConsole::setColoursFromConfig()
-	throw ()
 {
 	init_pair(CLR_STATUSBAR,
 		cgaColours[cfg.clrStatusBar.iFG & 7],

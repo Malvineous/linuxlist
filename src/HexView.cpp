@@ -2,7 +2,7 @@
  * @file   HexView.cpp
  * @brief  IView implementation for a hex editor view.
  *
- * Copyright (C) 2009-2010 Adam Nielsen <malvineous@shikadi.net>
+ * Copyright (C) 2009-2012 Adam Nielsen <malvineous@shikadi.net>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,11 +30,9 @@
 /// Number of chars wide each num is (e.g. 9-bit nums are three chars wide)
 #define CALC_HEXCELL_WIDTH ((this->bitWidth + 3) / 4)
 
-
 HexView::HexView(std::string strFilename, camoto::stream::inout_sptr data,
 	IConsole *pConsole)
-	throw () :
-		FileView(strFilename, data, pConsole),
+	:	FileView(strFilename, data, pConsole),
 		iLineWidth(16),
 		iLineAlloc(16),
 		pLineBuffer(NULL),
@@ -46,8 +44,7 @@ HexView::HexView(std::string strFilename, camoto::stream::inout_sptr data,
 }
 
 HexView::HexView(const FileView& parent)
-	throw () :
-		FileView(parent),
+	:	FileView(parent),
 		iLineWidth(16),
 		iLineAlloc(16),
 		pLineBuffer(NULL),
@@ -59,7 +56,6 @@ HexView::HexView(const FileView& parent)
 }
 
 HexView::~HexView()
-	throw ()
 {
 	this->file.flush();
 	assert(this->pLineBuffer != NULL);
@@ -67,7 +63,6 @@ HexView::~HexView()
 }
 
 bool HexView::processKey(Key c)
-	throw ()
 {
 	int iWidth, iHeight;
 	this->pConsole->getContentDims(&iWidth, &iHeight);
@@ -184,7 +179,6 @@ bool HexView::processKey(Key c)
 }
 
 void HexView::redrawScreen()
-	throw ()
 {
 	int iWidth, iHeight;
 	this->pConsole->getContentDims(&iWidth, &iHeight);
@@ -198,7 +192,6 @@ void HexView::redrawScreen()
 }
 
 void HexView::generateHeader(std::ostringstream& ss)
-	throw ()
 {
 	this->FileView::generateHeader(ss);
 	// Append our own text onto the end
@@ -207,14 +200,12 @@ void HexView::generateHeader(std::ostringstream& ss)
 }
 
 void HexView::scrollAbs(unsigned long iNewOffset)
-	throw ()
 {
 	this->scrollRel(iNewOffset - this->iOffset);
 	return;
 }
 
 void HexView::scrollRel(int iDelta)
-	throw ()
 {
 	if (iDelta == 0) return; // e.g. pressing Home twice
 
@@ -313,7 +304,6 @@ void HexView::scrollRel(int iDelta)
 }
 
 void HexView::redrawLines(int iTop, int iBottom)
-	throw ()
 {
 	this->showCursor(false);
 	int y = iTop;
@@ -350,7 +340,6 @@ void HexView::redrawLines(int iTop, int iBottom)
 }
 
 void HexView::drawLine(int iLine, unsigned long iOffset, const int *pData, int iLen)
-	throw ()
 {
 	this->pConsole->gotoxy(0, iLine);
 	std::ostringstream osHex;
@@ -399,7 +388,6 @@ void HexView::drawLine(int iLine, unsigned long iOffset, const int *pData, int i
 }
 
 void HexView::adjustLineWidth(int delta)
-	throw ()
 {
 	int iWidth, iHeight;
 	this->pConsole->getContentDims(&iWidth, &iHeight);
@@ -426,7 +414,6 @@ void HexView::adjustLineWidth(int delta)
 }
 
 void HexView::cycleEditMode()
-	throw ()
 {
 	this->editMode = (EditMode)((this->editMode + 1) % NUM_EDIT_MODES);
 	if (this->editMode == View) {
@@ -444,7 +431,6 @@ void HexView::cycleEditMode()
 }
 
 void HexView::updateCursorPos()
-	throw ()
 {
 	int cursorX = this->cursorOffset % this->iLineWidth;
 	int cursorY = this->cursorOffset / this->iLineWidth;
@@ -468,7 +454,6 @@ void HexView::updateCursorPos()
 }
 
 void HexView::showCursor(bool visible)
-	throw ()
 {
 	if (this->editMode != View) {
 		if (visible) {
@@ -482,7 +467,6 @@ void HexView::showCursor(bool visible)
 }
 
 void HexView::moveCursor(int delta)
-	throw ()
 {
 	int iWidth, iHeight;
 	this->pConsole->getContentDims(&iWidth, &iHeight);
@@ -548,7 +532,6 @@ void HexView::moveCursor(int delta)
 }
 
 void HexView::writeByteAtCursor(unsigned int byte)
-	throw ()
 {
 	camoto::stream::pos iCurOffset = this->iOffset + this->cursorOffset;
 	int dest = iCurOffset * this->bitWidth + this->intraByteOffset;
@@ -584,7 +567,6 @@ void HexView::writeByteAtCursor(unsigned int byte)
 }
 
 void HexView::gotoOffset()
-	throw ()
 {
 	std::string val = this->pConsole->getString("Offset", 15);
 

@@ -45,31 +45,24 @@ class HexView: public FileView
 
 	public:
 		HexView(std::string strFilename, camoto::stream::inout_sptr data,
-			IConsole *pConsole)
-			throw ();
+			IConsole *pConsole);
 
-		HexView(const FileView& parent)
-			throw ();
+		HexView(const FileView& parent);
 
-		~HexView()
-			throw ();
+		~HexView();
 
-		bool processKey(Key c)
-			throw ();
+		bool processKey(Key c);
 
-		void redrawScreen()
-			throw ();
+		void redrawScreen();
 
-		void generateHeader(std::ostringstream& ss)
-			throw ();
+		void generateHeader(std::ostringstream& ss);
 
 		/// Scroll to an absolute offset.
 		/**
 		 * @param iNewOffset
 		 *   Offset to of byte to appear at (0,0)
 		 */
-		void scrollAbs(unsigned long iNewOffset)
-			throw ();
+		void scrollAbs(unsigned long iNewOffset);
 
 		/// Scroll by this number of chars.
 		/**
@@ -78,8 +71,7 @@ class HexView: public FileView
 		 *   scroll forward one byte.  -this->iLineWidth will scroll up one line,
 		 *   +this->iLineWidth will scroll down one line.
 		 */
-		void scrollRel(int iDelta)
-			throw ();
+		void scrollRel(int iDelta);
 
 		/// Redraw part of the screen.
 		/**
@@ -89,8 +81,7 @@ class HexView: public FileView
 		 * @param iBottom
 		 *   Stop drawing at this line.  iBottom-1 is the actual last line drawn.
 		 */
-		void redrawLines(int iTop, int iBottom)
-			throw ();
+		void redrawLines(int iTop, int iBottom);
 
 		/// Display the file data (starting at the current offset) in the content
 		/// window.
@@ -107,8 +98,7 @@ class HexView: public FileView
 		 * @param iLen
 		 *   Line length/length of pData
 		 */
-		void drawLine(int iLine, unsigned long iOffset, const int *pData, int iLen)
-			throw ();
+		void drawLine(int iLine, unsigned long iOffset, const int *pData, int iLen);
 
 		/// Increase or decrease the line width.
 		/**
@@ -122,20 +112,17 @@ class HexView: public FileView
 		 *   width.  If the value would have moved the width out of range, nothing
 		 *   will be changed or redrawn.
 		 */
-		void adjustLineWidth(int delta)
-			throw ();
+		void adjustLineWidth(int delta);
 
 		/// Cycle between edit modes.
-		void cycleEditMode()
-			throw ();
+		void cycleEditMode();
 
 		/// Move the text cursor to its correct location.
 		/**
 		 * This function is used after this->cursorOffset has been changed, to move
 		 * the cursor to the new location.
 		 */
-		void updateCursorPos()
-			throw ();
+		void updateCursorPos();
 
 		/// Show/hide text cursor.
 		/**
@@ -145,8 +132,7 @@ class HexView: public FileView
 		 * @note Returns cursor to last location before showing, and is a no-op
 		 *   when in view mode (cursor is always hidden then)
 		 */
-		void showCursor(bool visible)
-			throw ();
+		void showCursor(bool visible);
 
 		/// Move the cursor position by the given amount.
 		/**
@@ -159,8 +145,7 @@ class HexView: public FileView
 		 *   move past the end of the screen, the cursor will stay put but more
 		 *   data will scroll into place.
 		 */
-		void moveCursor(int delta)
-			throw ();
+		void moveCursor(int delta);
 
 		/// Write the given value into the file at the current cursor offset.
 		/**
@@ -169,12 +154,10 @@ class HexView: public FileView
 		 *
 		 * @post Underlying file has been changed.  Screen is not updated.
 		 */
-		void writeByteAtCursor(unsigned int byte)
-			throw ();
+		void writeByteAtCursor(unsigned int byte);
 
 		/// Prompt the user for an offset, then jump there.
-		void gotoOffset()
-			throw ();
+		void gotoOffset();
 
 };
 

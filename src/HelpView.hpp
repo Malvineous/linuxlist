@@ -2,7 +2,7 @@
  * @file   HelpView.hpp
  * @brief  TextView extension for showing help screen.
  *
- * Copyright (C) 2009-2010 Adam Nielsen <malvineous@shikadi.net>
+ * Copyright (C) 2009-2012 Adam Nielsen <malvineous@shikadi.net>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,8 +21,6 @@
 #ifndef HELPVIEW_HPP_
 #define HELPVIEW_HPP_
 
-#include <config.h>
-
 #include <sstream>
 #include <boost/shared_ptr.hpp>
 #include "TextView.hpp"
@@ -35,17 +33,11 @@ class HelpView: public TextView
 		IViewPtr oldView;
 
 	public:
-		HelpView(IViewPtr oldView, IConsole *pConsole)
-			throw ();
+		HelpView(IViewPtr oldView, IConsole *pConsole);
+		~HelpView();
 
-		~HelpView()
-			throw ();
-
-		bool processKey(Key c)
-			throw ();
-
-		void generateHeader(std::ostringstream& ss)
-			throw ();
+		bool processKey(Key c);
+		void generateHeader(std::ostringstream& ss);
 };
 
 #endif // HELPVIEW_HPP_

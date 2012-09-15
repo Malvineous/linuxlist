@@ -2,7 +2,7 @@
  * @file   FileView.cpp
  * @brief  IView interface for a file viewer.
  *
- * Copyright (C) 2009-2010 Adam Nielsen <malvineous@shikadi.net>
+ * Copyright (C) 2009-2012 Adam Nielsen <malvineous@shikadi.net>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,8 +22,7 @@
 
 FileView::FileView(std::string strFilename, camoto::stream::inout_sptr data,
 	IConsole *pConsole)
-	throw () :
-		strFilename(strFilename),
+	:	strFilename(strFilename),
 		file(data, camoto::bitstream::littleEndian),
 		pConsole(pConsole),
 		bStatusAlertVisible(true), // trigger an update when next set
@@ -35,8 +34,7 @@ FileView::FileView(std::string strFilename, camoto::stream::inout_sptr data,
 }
 
 FileView::FileView(const FileView& parent)
-	throw () :
-		strFilename(parent.strFilename),
+	:	strFilename(parent.strFilename),
 		file(parent.file),
 		pConsole(parent.pConsole),
 		bStatusAlertVisible(true), // trigger an update when next set
@@ -48,12 +46,10 @@ FileView::FileView(const FileView& parent)
 }
 
 FileView::~FileView()
-	throw ()
 {
 }
 
 void FileView::init()
-	throw ()
 {
 	this->pConsole->clearStatusBar(SB_TOP);
 	this->pConsole->setStatusBar(SB_TOP, SB_LEFT, this->strFilename);
@@ -62,7 +58,6 @@ void FileView::init()
 }
 
 void FileView::statusAlert(const char *cMsg)
-	throw ()
 {
 	// If there's no status message and a blank has been requested, do nothing.
 	if ((!cMsg) && (!this->bStatusAlertVisible)) return;
@@ -84,7 +79,6 @@ void FileView::statusAlert(const char *cMsg)
 }
 
 void FileView::generateHeader(std::ostringstream& ss)
-	throw ()
 {
 	unsigned long offsetInBytes = (this->iOffset * this->bitWidth) >> 3;
 	// TODO: Leading spaces are dodgy, erase the line or something first.
@@ -100,7 +94,6 @@ void FileView::generateHeader(std::ostringstream& ss)
 }
 
 void FileView::updateHeader()
-	throw ()
 {
 	std::ostringstream ss;
 	this->generateHeader(ss);
@@ -110,7 +103,6 @@ void FileView::updateHeader()
 
 
 void FileView::setBitWidth(int newWidth)
-	throw ()
 {
 	// Since the first bit on the screen should stay the same after
 	// this change, we need to adjust offsets.
@@ -126,7 +118,6 @@ void FileView::setBitWidth(int newWidth)
 }
 
 void FileView::setIntraByteOffset(int delta)
-	throw ()
 {
 	if ((this->intraByteOffset + delta) >= this->bitWidth) {
 		this->iOffset++;

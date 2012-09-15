@@ -2,7 +2,7 @@
  * @file   TextView.cpp
  * @brief  IView implementation for a text view.
  *
- * Copyright (C) 2009-2010 Adam Nielsen <malvineous@shikadi.net>
+ * Copyright (C) 2009-2012 Adam Nielsen <malvineous@shikadi.net>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,8 +33,7 @@
 
 TextView::TextView(std::string strFilename, camoto::stream::inout_sptr data,
 	IConsole *pConsole)
-	throw () :
-		FileView(strFilename, data, pConsole),
+	:	FileView(strFilename, data, pConsole),
 		iLineAlloc(80),
 		line(0),
 		cacheComplete(false)
@@ -43,8 +42,7 @@ TextView::TextView(std::string strFilename, camoto::stream::inout_sptr data,
 }
 
 TextView::TextView(const FileView& parent)
-	throw () :
-		FileView(parent),
+	:	FileView(parent),
 		iLineAlloc(80),
 		line(0),
 		cacheComplete(false)
@@ -76,14 +74,12 @@ TextView::TextView(const FileView& parent)
 }
 
 TextView::~TextView()
-	throw ()
 {
 	assert(this->pLineBuffer != NULL);
 	delete[] this->pLineBuffer;
 }
 
 bool TextView::processKey(Key c)
-	throw ()
 {
 	int iWidth, iHeight;
 	this->pConsole->getContentDims(&iWidth, &iHeight);
@@ -160,7 +156,6 @@ bool TextView::processKey(Key c)
 }
 
 void TextView::redrawScreen()
-	throw ()
 {
 	int iWidth, iHeight;
 	this->pConsole->getContentDims(&iWidth, &iHeight);
@@ -177,7 +172,6 @@ void TextView::redrawScreen()
 }
 
 void TextView::generateHeader(std::ostringstream& ss)
-	throw ()
 {
 	this->iOffset = this->linePos[this->line] / 8;
 	this->FileView::generateHeader(ss);
@@ -188,7 +182,6 @@ void TextView::generateHeader(std::ostringstream& ss)
 }
 
 void TextView::setBitWidth(int newWidth)
-	throw ()
 {
 	// Clear all the line markings so they are re-read
 	this->linePos.clear();
@@ -200,7 +193,6 @@ void TextView::setBitWidth(int newWidth)
 }
 
 void TextView::setIntraByteOffset(int delta)
-	throw ()
 {
 	// Clear all the line markings so they are re-read
 	this->linePos.clear();
@@ -212,7 +204,6 @@ void TextView::setIntraByteOffset(int delta)
 }
 
 void TextView::scrollLines(int iDelta)
-	throw ()
 {
 	if (iDelta == 0) return; // e.g. pressing Home twice
 
@@ -278,7 +269,6 @@ void TextView::scrollLines(int iDelta)
 }
 
 void TextView::redrawLines(int iTop, int iBottom, int width)
-	throw ()
 {
 	if (width > this->iLineAlloc) {
 		// Enlarge the buffer
@@ -375,7 +365,6 @@ void TextView::redrawLines(int iTop, int iBottom, int width)
 }
 
 void TextView::cacheLines(int maxLine, int width)
-	throw ()
 {
 	int cachedLines = this->linePos.size();
 	if (cachedLines == 0) {

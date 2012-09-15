@@ -2,7 +2,7 @@
  * @file   HelpView.cpp
  * @brief  TextView extension for showing help screen.
  *
- * Copyright (C) 2009-2010 Adam Nielsen <malvineous@shikadi.net>
+ * Copyright (C) 2009-2012 Adam Nielsen <malvineous@shikadi.net>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,7 +24,7 @@
 
 #define HELP_TEXT \
 	"Linux List - a Linux clone of Vernon D. Buerg's List file viewer\n" \
-	"Copyright 2009-2010 Adam Nielsen <malvineous@shikadi.net>\n" \
+	"Copyright 2009-2012 Adam Nielsen <malvineous@shikadi.net>\n" \
 	"http://www.shikadi.net/ll\n" \
 	"\n" \
 	"-= Keys =-\n" \
@@ -95,19 +95,16 @@ struct helpContent {
 helpContent help;
 
 HelpView::HelpView(IViewPtr oldView, IConsole *pConsole)
-	throw () :
-		TextView("Help (F10 to exit)", ::help.contentStream, pConsole),
+	:	TextView("Help (F10 to exit)", ::help.contentStream, pConsole),
 		oldView(oldView)
 {
 }
 
 HelpView::~HelpView()
-	throw ()
 {
 }
 
 bool HelpView::processKey(Key c)
-	throw ()
 {
 	bool setColours = false;
 	switch (c) {
@@ -162,7 +159,6 @@ bool HelpView::processKey(Key c)
 }
 
 void HelpView::generateHeader(std::ostringstream& ss)
-	throw ()
 {
 	ss << "   Line: " << this->line + 1 << '/' << this->linePos.size();
 	if (!this->cacheComplete) ss << '+';

@@ -2,7 +2,7 @@
  * @file   XConsole.cpp
  * @brief  X11 implementation of IConsole.
  *
- * Copyright (C) 2009-2010 Adam Nielsen <malvineous@shikadi.net>
+ * Copyright (C) 2009-2012 Adam Nielsen <malvineous@shikadi.net>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -50,8 +50,7 @@ int pal[] = {
 };
 
 XConsole::XConsole(Display *display)
-	throw (std::ios::failure) :
-		display(display),
+	:	display(display),
 		fontWidth(8),
 		fontHeight(14),
 		cursorX(0),
@@ -107,7 +106,6 @@ XConsole::XConsole(Display *display)
 }
 
 XConsole::~XConsole()
-	throw ()
 {
 	delete[] this->changed;
 	delete[] this->text;
@@ -122,14 +120,12 @@ XConsole::~XConsole()
 }
 
 void XConsole::setView(IViewPtr pView)
-	throw ()
 {
 	this->nextView = pView;
 	return;
 }
 
 void XConsole::mainLoop()
-	throw ()
 {
 	assert(this->nextView);
 	Key c;
@@ -210,14 +206,12 @@ void XConsole::mainLoop()
 }
 
 void XConsole::update(void)
-	throw ()
 {
 	this->redrawCells(0, 0, this->screenWidth, this->screenHeight, true);
 	return;
 }
 
 void XConsole::clearStatusBar(SB_Y eY)
-	throw ()
 {
 	int offset = (eY == SB_BOTTOM ? this->screenHeight - 1 : 0) * this->screenWidth;
 	memset(this->text    + offset, 0, this->screenWidth);
@@ -226,7 +220,6 @@ void XConsole::clearStatusBar(SB_Y eY)
 }
 
 void XConsole::setStatusBar(SB_Y eY, SB_X eX, const std::string& strMessage)
-	throw ()
 {
 	int x;
 	switch (eX) {
@@ -250,7 +243,6 @@ void XConsole::setStatusBar(SB_Y eY, SB_X eX, const std::string& strMessage)
 }
 
 void XConsole::gotoxy(int x, int y)
-	throw ()
 {
 	int oldX = this->cursorX, oldY = this->cursorY;
 	this->cursorX = x;
@@ -264,7 +256,6 @@ void XConsole::gotoxy(int x, int y)
 }
 
 void XConsole::putstr(const std::string& strContent)
-	throw ()
 {
 	int len = strContent.length();
 	this->writeText(this->cursorX, this->cursorY, strContent);
@@ -274,7 +265,6 @@ void XConsole::putstr(const std::string& strContent)
 }
 
 void XConsole::getContentDims(int *iWidth, int *iHeight)
-	throw ()
 {
 	*iWidth = this->screenWidth;
 	*iHeight = this->screenHeight - 2; // doesn't count status bars
@@ -282,7 +272,6 @@ void XConsole::getContentDims(int *iWidth, int *iHeight)
 }
 
 void XConsole::scrollContent(int iX, int iY)
-	throw ()
 {
 	int scrollSize = (this->screenHeight - 2 - abs(iY)) * this->screenWidth;
 	if (iY < 0) {
@@ -306,7 +295,6 @@ void XConsole::scrollContent(int iX, int iY)
 }
 
 void XConsole::eraseToEOL(void)
-	throw ()
 {
 	int offset = this->cursorY * this->screenWidth + this->cursorX;
 	int len = this->screenWidth - this->cursorX;
@@ -316,7 +304,6 @@ void XConsole::eraseToEOL(void)
 }
 
 void XConsole::cursor(bool visible)
-	throw ()
 {
 	this->cursorVisible = visible;
 	this->redrawCells(this->cursorX, this->cursorY,
@@ -325,7 +312,6 @@ void XConsole::cursor(bool visible)
 }
 
 std::string XConsole::getString(const std::string& strPrompt, int maxLen)
-	throw ()
 {
 	std::string s;
 	// TODO
@@ -333,7 +319,6 @@ std::string XConsole::getString(const std::string& strPrompt, int maxLen)
 }
 
 void XConsole::setColoursFromConfig()
-	throw ()
 {
 	int screen = DefaultScreen(this->display);
 	Colormap cmap = XDefaultColormap(this->display, screen);
@@ -363,7 +348,6 @@ void XConsole::setColoursFromConfig()
 
 void XConsole::redrawCells(int startX, int startY, int endX, int endY,
 	bool changedOnly)
-	throw ()
 {
 	int fore = -1;
 	for (int y = startY; y < endY; y++) {
@@ -416,7 +400,6 @@ void XConsole::redrawCells(int startX, int startY, int endX, int endY,
 }
 
 void XConsole::writeText(int x, int y, const std::string& strContent)
-	throw ()
 {
 	// Make sure this won't write past the end of the screen
 	assert(y * this->screenWidth + x +

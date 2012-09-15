@@ -2,7 +2,7 @@
  * @file   NCursesConsole.hpp
  * @brief  ncurses implementation of IConsole.
  *
- * Copyright (C) 2009-2010 Adam Nielsen <malvineous@shikadi.net>
+ * Copyright (C) 2009-2012 Adam Nielsen <malvineous@shikadi.net>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -62,51 +62,22 @@ class NCursesConsole: virtual public IConsole
 		attr_t iAttribute[3]; ///< Attributes (bold etc.) for matching colour pairs
 
 	public:
-		NCursesConsole(void)
-			throw ();
+		NCursesConsole(void);
+		~NCursesConsole();
 
-		~NCursesConsole()
-			throw ();
-
-		void setView(IViewPtr pView)
-			throw ();
-
-		void mainLoop()
-			throw ();
-
-		void update(void)
-			throw ();
-
-		void clearStatusBar(SB_Y eY)
-			throw ();
-
-		void setStatusBar(SB_Y eY, SB_X eX, const std::string& strMessage)
-			throw ();
-
-		void gotoxy(int x, int y)
-			throw ();
-
-		void putstr(const std::string& strContent)
-			throw ();
-
-		void getContentDims(int *iWidth, int *iHeight)
-			throw ();
-
-		void scrollContent(int iX, int iY)
-			throw ();
-
-		void eraseToEOL(void)
-			throw ();
-
-		void cursor(bool visible)
-			throw ();
-
-		std::string getString(const std::string& strPrompt, int maxLen)
-			throw ();
-
-		void setColoursFromConfig()
-			throw ();
-
+		void setView(IViewPtr pView);
+		void mainLoop();
+		void update(void);
+		void clearStatusBar(SB_Y eY);
+		void setStatusBar(SB_Y eY, SB_X eX, const std::string& strMessage);
+		void gotoxy(int x, int y);
+		void putstr(const std::string& strContent);
+		void getContentDims(int *iWidth, int *iHeight);
+		void scrollContent(int iX, int iY);
+		void eraseToEOL(void);
+		void cursor(bool visible);
+		std::string getString(const std::string& strPrompt, int maxLen);
+		void setColoursFromConfig();
 };
 
 #endif // NCURSESCONSOLE_HPP_

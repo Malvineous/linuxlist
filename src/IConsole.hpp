@@ -2,7 +2,7 @@
  * @file   IConsole.hpp
  * @brief  Console interface class.
  *
- * Copyright (C) 2009-2010 Adam Nielsen <malvineous@shikadi.net>
+ * Copyright (C) 2009-2012 Adam Nielsen <malvineous@shikadi.net>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -37,40 +37,31 @@ enum SB_X {
 	SB_RIGHT
 };
 
+/// Interface class to the UI.
 class IConsole
 {
 	public:
-		/// Virtual destructor.
-		virtual ~IConsole()
-			throw ()
-		{
-		}
-
 		/// Set the view that will be shown in this console.
 		/**
 		 * @param pView
 		 *   IView to pass keypress events to.
 		 */
-		virtual void setView(IViewPtr pView)
-			throw () = 0;
+		virtual void setView(IViewPtr pView) = 0;
 
 		/// Main loop for reading keystrokes and passing actions to the view.
 		/**
 		 * @return On return the application will terminate.
 		 */
-		virtual void mainLoop()
-			throw () = 0;
+		virtual void mainLoop() = 0;
 
 		/// Update the content area (not status bars) after changes have been made.
-		virtual void update(void)
-			throw () = 0;
+		virtual void update(void) = 0;
 
 		/// Blank out the text on the specified status bar.
 		/**
 		 * @note The change is not shown until the next call to update().
 		 */
-		virtual void clearStatusBar(SB_Y eY)
-			throw () = 0;
+		virtual void clearStatusBar(SB_Y eY) = 0;
 
 		/// Set the content of the given status bar.
 		/**
@@ -85,8 +76,7 @@ class IConsole
 		 * @param strMessage
 		 *   Text to show.
 		 */
-		virtual void setStatusBar(SB_Y eY, SB_X eX, const std::string& strMessage)
-			throw () = 0;
+		virtual void setStatusBar(SB_Y eY, SB_X eX, const std::string& strMessage) = 0;
 
 		//
 		// Display routines
@@ -100,16 +90,14 @@ class IConsole
 		 * @param y
 		 *   New Y-coordinate, 0 is top-most.
 		 */
-		virtual void gotoxy(int x, int y)
-			throw () = 0;
+		virtual void gotoxy(int x, int y) = 0;
 
 		/// Write a string at the current location.
 		/**
 		 * @param strContent
 		 *   String to write.
 		 */
-		virtual void putstr(const std::string& strContent)
-			throw () = 0;
+		virtual void putstr(const std::string& strContent) = 0;
 
 		/// Get the screen size.
 		/**
@@ -122,8 +110,7 @@ class IConsole
 		 * @param iHeight
 		 *   Pointer to where the height value will be written.
 		 */
-		virtual void getContentDims(int *iWidth, int *iHeight)
-			throw () = 0;
+		virtual void getContentDims(int *iWidth, int *iHeight) = 0;
 
 		/// Scroll the content area (between the status bars)
 		/**
@@ -133,20 +120,17 @@ class IConsole
 		 * @param iY
 		 *   Number of cells to scroll vertically.
 		 */
-		virtual void scrollContent(int iX, int iY)
-			throw () = 0;
+		virtual void scrollContent(int iX, int iY) = 0;
 
 		/// Erase from the current location to the end of the line.
-		virtual void eraseToEOL()
-			throw () = 0;
+		virtual void eraseToEOL() = 0;
 
 		/// Show or hide the text cursor.
 		/**
 		 * @param visible
 		 *   true to show the cursor at the current X,Y location, false to hide it.
 		 */
-		virtual void cursor(bool visible)
-			throw () = 0;
+		virtual void cursor(bool visible) = 0;
 
 		/// Read in a string from the user.
 		/**
@@ -162,17 +146,14 @@ class IConsole
 		 * @return The string entered by the user, or an empty string if the user
 		 *   pressed Escape to abort.
 		 */
-		virtual std::string getString(const std::string& strPrompt, int maxLen)
-			throw () = 0;
+		virtual std::string getString(const std::string& strPrompt, int maxLen) = 0;
 
 		/// Update the screen colours from the config file.
 		/**
 		 * The console constructor should call this function to set up initial
 		 * colours, and it may then be called later on to set different colours.
 		 */
-		virtual void setColoursFromConfig()
-			throw () = 0;
-
+		virtual void setColoursFromConfig() = 0;
 };
 
 #endif // ICONSOLE_HPP_

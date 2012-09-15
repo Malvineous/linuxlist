@@ -62,41 +62,33 @@ class FileView: virtual public IView
 		 *   Output console where data is drawn.
 		 */
 		FileView(std::string strFilename, camoto::stream::inout_sptr data,
-			IConsole *pConsole)
-			throw ();
+			IConsole *pConsole);
 
-		FileView(const FileView& parent)
-			throw ();
+		FileView(const FileView& parent);
 
 		/// Destructor
-		~FileView()
-			throw ();
+		~FileView();
 
-		void init()
-			throw ();
+		void init();
 
 		/// Set an alert message on the status bar.
 		/**
 		 * @param cMsg
 		 *   Message to show.  If NULL, message is removed.
 		 */
-		void statusAlert(const char *cMsg)
-			throw ();
+		void statusAlert(const char *cMsg);
 
 		/// Get the text to show in the header (file offset, etc.)
-		virtual void generateHeader(std::ostringstream& ss)
-			throw ();
+		virtual void generateHeader(std::ostringstream& ss);
 
 		/// Update the top status bar with the current offset etc.
-		void updateHeader()
-			throw ();
+		void updateHeader();
 
 		/// Set the size of each cell in bits.
 		/**
 		 * When this is set to eight, a normal byte-level view will be shown.
 		 */
-		void setBitWidth(int newWidth)
-			throw ();
+		void setBitWidth(int newWidth);
 
 		/// Set the bit-level offset within the cell.
 		/**
@@ -106,9 +98,7 @@ class FileView: virtual public IView
 		 * bits in the first input byte, and first bit in the second input byte)
 		 * will appear as the first byte on the screen.
 		 */
-		void setIntraByteOffset(int delta)
-			throw ();
-
+		void setIntraByteOffset(int delta);
 };
 
 #endif // FILEVIEW_HPP_

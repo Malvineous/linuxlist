@@ -64,50 +64,22 @@ class XConsole: virtual public IConsole
 		unsigned long pixels[PX_TOTAL]; ///< X11 pixel values to use for colours
 
 	public:
-		XConsole(Display *display)
-			throw (std::ios::failure);
+		XConsole(Display *display);
+		~XConsole();
 
-		~XConsole()
-			throw ();
-
-		void setView(IViewPtr pView)
-			throw ();
-
-		void mainLoop()
-			throw ();
-
-		void update(void)
-			throw ();
-
-		void clearStatusBar(SB_Y eY)
-			throw ();
-
-		void setStatusBar(SB_Y eY, SB_X eX, const std::string& strMessage)
-			throw ();
-
-		void gotoxy(int x, int y)
-			throw ();
-
-		void putstr(const std::string& strContent)
-			throw ();
-
-		void getContentDims(int *iWidth, int *iHeight)
-			throw ();
-
-		void scrollContent(int iX, int iY)
-			throw ();
-
-		void eraseToEOL(void)
-			throw ();
-
-		void cursor(bool visible)
-			throw ();
-
-		std::string getString(const std::string& strPrompt, int maxLen)
-			throw ();
-
-		void setColoursFromConfig()
-			throw ();
+		void setView(IViewPtr pView);
+		void mainLoop();
+		void update(void);
+		void clearStatusBar(SB_Y eY);
+		void setStatusBar(SB_Y eY, SB_X eX, const std::string& strMessage);
+		void gotoxy(int x, int y);
+		void putstr(const std::string& strContent);
+		void getContentDims(int *iWidth, int *iHeight);
+		void scrollContent(int iX, int iY);
+		void eraseToEOL(void);
+		void cursor(bool visible);
+		std::string getString(const std::string& strPrompt, int maxLen);
+		void setColoursFromConfig();
 
 	protected:
 		/// Redraw the characters at the given text coordinates.
@@ -132,8 +104,7 @@ class XConsole: virtual public IConsole
 		 *   the last redraw (where this->changed != 0 for this cell's entry.)  If
 		 *   false, all cells are redrawn regardless.
 		 */
-		void redrawCells(int startX, int startY, int endX, int endY, bool changedOnly)
-			throw ();
+		void redrawCells(int startX, int startY, int endX, int endY, bool changedOnly);
 
 		/// Write text at the given location.
 		/**
@@ -151,9 +122,7 @@ class XConsole: virtual public IConsole
 		 * @param strContent
 		 *   The text to draw.
 		 */
-		void writeText(int x, int y, const std::string& strContent)
-			throw ();
-
+		void writeText(int x, int y, const std::string& strContent);
 };
 
 #endif // XCONSOLE_HPP_
