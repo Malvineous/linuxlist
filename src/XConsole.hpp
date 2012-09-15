@@ -25,7 +25,7 @@
 
 #include <stdint.h>
 
-#ifndef HAVE_LIBX11
+#ifndef USE_X11
 #error This file should not be compiled without X-Windows!
 #endif
 

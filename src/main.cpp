@@ -28,7 +28,7 @@
 #include "NCursesConsole.hpp"
 #endif
 
-#ifdef HAVE_LIBX11
+#ifdef USE_X11
 #include "XConsole.hpp"
 #endif
 
@@ -72,7 +72,7 @@ int main(int iArgC, char *cArgV[])
 	IConsole *pConsole = NULL;
 
 	// Try X11 interface first, if present
-#ifdef HAVE_LIBX11
+#ifdef USE_X11
 	Display *display = XOpenDisplay("");
 	if (display) {
 		pConsole = new XConsole(display);
@@ -88,7 +88,7 @@ int main(int iArgC, char *cArgV[])
 
 	if (!pConsole) {
 		std::cerr << "Unable to find a usable display method from one of [ "
-#ifdef HAVE_LIBX11
+#ifdef USE_X11
 			"X11 "
 #endif
 #ifdef HAVE_NCURSESW
@@ -124,7 +124,7 @@ int main(int iArgC, char *cArgV[])
 	config.write((char*)&::cfg, sizeof(::cfg));
 	config.close();
 
-#ifdef HAVE_LIBX11
+#ifdef USE_X11
 	if (display) XCloseDisplay(display);
 #endif
 

@@ -9,36 +9,48 @@ AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([m4])
 AC_LANG(C++)
 
-# Overarching version of all libraries (used for installation dir)
-AC_SUBST(linuxlist_release, linuxlist-1.0)
-
-# Checks for programs.
 AC_PROG_CXX
-
-# Checks for libraries.
 AC_PROG_LIBTOOL
-AC_CHECK_LIB([X11], [XOpenDisplay])
+
+AC_PATH_X
+AM_CONDITIONAL([HAVE_X], [test \! "x$no_x" = "xyes"])
+AM_COND_IF([HAVE_X], [
+	AC_DEFINE([USE_X11], [1], [Define to use X11 hotkeys])
+	AC_SUBST([X_LIBS], ["$x_libraries -lX11"])
+	status_x="enabled"
+], [
+	status_x="disabled"
+])
+#AC_CHECK_LIB([X11], [XOpenDisplay])
 
 BOOST_REQUIRE([1.37])
-
 PKG_CHECK_MODULES([libgamecommon], [libgamecommon])
 
 AX_WITH_CURSES
-case "$ax_cv_ncurses" in "no")
-	AC_ERROR([ncurses not found])
-esac
-case "$ax_cv_ncursesw" in "no")
-	AC_MSG_WARN([ncurses does not support wide-characters.])
-	AC_MSG_WARN([This means that UTF-8 cannot be used to see ASCII control characters.])
-esac
-AC_SUBST(CURSES_LIB)
+AM_CONDITIONAL([HAVE_NCURSES], [test "x$ax_cv_ncurses" = "xyes"])
+
+AM_COND_IF([HAVE_NCURSES], [
+	if test "x$ax_cv_ncursesw" = "xno";
+	then
+		AC_MSG_WARN([ncurses does not support wide-characters.])
+		AC_MSG_WARN([This means that UTF-8 cannot be used to see ASCII control characters.])
+		status_ncurses="enabled (non-wide)"
+	else
+		status_ncurses="enabled"
+	fi
+], [
+	status_ncurses="disabled"
+])
+
+AC_SUBST([CURSES_LIB])
 
 AM_ICONV
 
-# Checks for header files.
-
-# Checks for typedefs, structures, and compiler characteristics.
-
-# Checks for library functions.
+AM_SILENT_RULES([yes])
 
 AC_OUTPUT(Makefile src/Makefile doc/Makefile)
+
+echo
+echo "Platform availability summary:"
+echo "  X-Windows:   $status_x"
+echo "  ncurses:     $status_ncurses"
