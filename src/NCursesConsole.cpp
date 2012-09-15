@@ -2,7 +2,7 @@
  * @file   NCursesConsole.cpp
  * @brief  ncurses implementation of IConsole.
  *
- * Copyright (C) 2009-2010 Adam Nielsen <malvineous@shikadi.net>
+ * Copyright (C) 2009-2012 Adam Nielsen <malvineous@shikadi.net>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -43,7 +43,7 @@ wchar_t ctl_utf8[] = {
 	0x2666, // Diamond
 	0x2663, // Club
 	0x2660, // Spade
-	0x25CF, // bullet (should be smaller than this though)
+	0x2022, // bullet
 	0x25D8, // inverted bullet
 	0x25CB, // small circle
 	0x25D9, // inverted small circle
@@ -52,13 +52,13 @@ wchar_t ctl_utf8[] = {
 	0x266A, // single note
 	0x266B, // double note
 	0x263C, // O thing
-	0x25B6, // solid > triangle
-	0x25C0, // solid < triangle
+	0x25BA, // solid > triangle
+	0x25C4, // solid < triangle
 	0x2195, // up/down arrow
 	0x203C, // double exclamation mark
 	0x00B6, // end of paragraph marker
 	0x00A7, // weird S thing
-	0x2583, // thick underline
+	0x25AC, // thick underline
 	0x21A8, // underlined up/down arrow
 	0x2191, // up arrow
 	0x2193, // down arrow
@@ -69,7 +69,7 @@ wchar_t ctl_utf8[] = {
 	0x25B2, // solid ^ triangle
 	0x25BC, // solid v triangle
 };
-// 127 could be 0x25B0 (just a triangle, not square at the bottom)
+const wchar_t ctl_utf8_0x7f = 0x2302;
 
 NCursesConsole::NCursesConsole(void)
 	throw () :
@@ -255,7 +255,7 @@ void NCursesConsole::putstr(const std::string& strContent)
 					wout[i] = ctl_utf8[wout[i]];
 				} else if (wout[i] == 127) {
 					// Also not escaped
-					wout[i] = 0x25B0;
+					wout[i] = ctl_utf8_0x7f;
 				}
 			}
 			waddnwstr(this->winContent, wout, iCount);
