@@ -25,6 +25,9 @@
 #include <config.h>
 #include "cfg.hpp"
 
+/// Path to config file, within home directory
+#define CONFIG_FILE "/.config/ll"
+
 #ifdef HAVE_NCURSESW
 #include "NCursesConsole.hpp"
 #endif
@@ -60,8 +63,15 @@ int main(int iArgC, char *cArgV[])
 	}
 
 	// Load config
-	std::fstream config(CONFIG_FILE, std::ios::in);
-	if (!readConfig(config)) {
+	bool gotConfig = false;
+	std::string configFilename(getenv("HOME"));
+	if (!configFilename.empty()) {
+		configFilename.append(CONFIG_FILE);
+		std::fstream config(configFilename.c_str(), std::ios::in);
+		gotConfig = readConfig(config);
+		config.close();
+	}
+	if (!gotConfig) {
 		// Set defaults
 		::cfg.clrStatusBar.iFG = 15;
 		::cfg.clrStatusBar.iBG = 4;
@@ -70,8 +80,6 @@ int main(int iArgC, char *cArgV[])
 		::cfg.clrHighlight.iFG = 10;
 		::cfg.clrHighlight.iBG = 0;
 		::cfg.view = View_Text;
-	} else {
-		config.close();
 	}
 
 	IConsole *pConsole = NULL;
@@ -124,10 +132,12 @@ int main(int iArgC, char *cArgV[])
 	delete pConsole;
 
 	// Save config file
-	config.open(CONFIG_FILE, std::ios::out);
-	config.seekp(0, std::ios::beg);
-	config.write((char*)&::cfg, sizeof(::cfg));
-	config.close();
+	if (!configFilename.empty()) {
+		std::fstream config(configFilename.c_str(), std::ios::out);
+		config.seekp(0, std::ios::beg);
+		config.write((char*)&::cfg, sizeof(::cfg));
+		config.close();
+	}
 
 #ifdef USE_X11
 	if (display) XCloseDisplay(display);
