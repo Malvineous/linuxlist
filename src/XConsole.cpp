@@ -136,106 +136,104 @@ void XConsole::mainLoop()
 	XEvent ev;
 	int newWidth = 0, newHeight = 0;
 	bool running = true, redraw = false;
-	do {
-		// Wait for the next event
-		XPeekEvent(this->display, &ev);
-
-		while (XCheckMaskEvent(this->display, KeyPressMask | ExposureMask | StructureNotifyMask, &ev)) {
-			switch (ev.type) {
-				case Expose:
-					if (!(newWidth || newHeight)) {
-						this->redrawCells(
-							ev.xexpose.x / this->fontWidth,
-							ev.xexpose.y / this->fontHeight,
-							(ev.xexpose.x + ev.xexpose.width + this->fontWidth - 1) / this->fontWidth,
-							(ev.xexpose.y + ev.xexpose.height + this->fontHeight - 1) / this->fontHeight,
-							false // draw all cells, even unchanged ones
-						);
-					}
-					break;
-				case KeymapNotify:
-					XRefreshKeyboardMapping(&ev.xmapping);
-					break;
-				case KeyPress: {
-					Key c;
-					char ch[32];
-					KeySym sym;
-					int len = XLookupString(&ev.xkey, ch, sizeof(ch), &sym, NULL);
-					switch (sym) {
-						case XK_Tab:          c = Key_Tab; break;
-						case XK_KP_Enter:     c = Key_Enter; break;
-						case XK_Escape:       c = Key_Esc; break;
-						case XK_Up:           c = Key_Up; break;
-						case XK_Down:         c = Key_Down; break;
-						case XK_Left:         c = Key_Left; break;
-						case XK_Right:        c = Key_Right; break;
-						case XK_Home:         c = Key_Home; break;
-						case XK_End:          c = Key_End; break;
-						case XK_Page_Up:      c = Key_PageUp; break;
-						case XK_Page_Down:    c = Key_PageDown; break;
-						case XK_Delete:       c = Key_Del; break;
-						case XK_KP_Up:        c = Key_Up; break;
-						case XK_KP_Down:      c = Key_Down; break;
-						case XK_KP_Left:      c = Key_Left; break;
-						case XK_KP_Right:     c = Key_Right; break;
-						case XK_KP_Home:      c = Key_Home; break;
-						case XK_KP_End:       c = Key_End; break;
-						case XK_KP_Page_Up:   c = Key_PageUp; break;
-						case XK_KP_Page_Down: c = Key_PageDown; break;
-						case XK_KP_Delete:    c = Key_Del; break;
-						case XK_F1:           c = Key_F1; break;
-						case XK_F10:          c = Key_F10; break;
-						default:
-							if (len == 1) c = (Key)ch[0];
-							else c = Key_None;
-							break;
-					}
-					if (ev.xkey.state & Mod1Mask) c = (Key)(c | Key_Alt);
-					running = this->processKey(c);
-					break;
+	while (running && (XNextEvent(this->display, &ev) >= 0)) {
+		switch (ev.type) {
+			case Expose:
+				if (!(newWidth || newHeight)) {
+					this->redrawCells(
+						ev.xexpose.x / this->fontWidth,
+						ev.xexpose.y / this->fontHeight,
+						(ev.xexpose.x + ev.xexpose.width + this->fontWidth - 1) / this->fontWidth,
+						(ev.xexpose.y + ev.xexpose.height + this->fontHeight - 1) / this->fontHeight,
+						false // draw all cells, even unchanged ones
+					);
 				}
-				case ConfigureNotify: {
-					int width = ev.xconfigure.width / this->fontWidth;
-					int height = ev.xconfigure.height / this->fontHeight;
-					if (
-						((newWidth == 0) && (this->screenWidth != width))
-						|| ((newWidth != 0) && (newWidth != width))
-						|| ((newHeight == 0) && (this->screenHeight != height))
-						|| ((newHeight != 0) && (newHeight != height))
-					) {
-						newWidth = width;
-						newHeight = height;
-					}
-					break;
+				break;
+			case KeymapNotify:
+				XRefreshKeyboardMapping(&ev.xmapping);
+				break;
+			case KeyPress: {
+				Key c;
+				char ch[32];
+				KeySym sym;
+				int len = XLookupString(&ev.xkey, ch, sizeof(ch), &sym, NULL);
+				switch (sym) {
+					case XK_Tab:          c = Key_Tab; break;
+					case XK_KP_Enter:     c = Key_Enter; break;
+					case XK_Escape:       c = Key_Esc; break;
+					case XK_Up:           c = Key_Up; break;
+					case XK_Down:         c = Key_Down; break;
+					case XK_Left:         c = Key_Left; break;
+					case XK_Right:        c = Key_Right; break;
+					case XK_Home:         c = Key_Home; break;
+					case XK_End:          c = Key_End; break;
+					case XK_Page_Up:      c = Key_PageUp; break;
+					case XK_Page_Down:    c = Key_PageDown; break;
+					case XK_Delete:       c = Key_Del; break;
+					case XK_KP_Up:        c = Key_Up; break;
+					case XK_KP_Down:      c = Key_Down; break;
+					case XK_KP_Left:      c = Key_Left; break;
+					case XK_KP_Right:     c = Key_Right; break;
+					case XK_KP_Home:      c = Key_Home; break;
+					case XK_KP_End:       c = Key_End; break;
+					case XK_KP_Page_Up:   c = Key_PageUp; break;
+					case XK_KP_Page_Down: c = Key_PageDown; break;
+					case XK_KP_Delete:    c = Key_Del; break;
+					case XK_F1:           c = Key_F1; break;
+					case XK_F10:          c = Key_F10; break;
+					default:
+						if (len == 1) c = (Key)ch[0];
+						else c = Key_None;
+						break;
 				}
+				if (ev.xkey.state & Mod1Mask) c = (Key)(c | Key_Alt);
+				running = this->processKey(c);
+				break;
+			}
+			case ConfigureNotify: {
+				int width = ev.xconfigure.width / this->fontWidth;
+				int height = ev.xconfigure.height / this->fontHeight;
+				if (
+					((newWidth == 0) && (this->screenWidth != width))
+					|| ((newWidth != 0) && (newWidth != width))
+					|| ((newHeight == 0) && (this->screenHeight != height))
+					|| ((newHeight != 0) && (newHeight != height))
+				) {
+					newWidth = width;
+					newHeight = height;
+				}
+				break;
 			}
 		}
-		// No more events waiting, do the time consuming things
-		if (newWidth || newHeight) {
-			int screensize = newWidth * newHeight;
-			if (screensize > this->screenWidth * this->screenHeight) {
-				delete[] this->text;
-				delete[] this->changed;
-				this->text    = new uint8_t[screensize];
-				this->changed = new uint8_t[screensize];
-			}
-			memset(this->text,    0, screensize);
-			memset(this->changed, 1, screensize);
-			this->screenWidth = newWidth;
-			this->screenHeight = newHeight;
-			this->view->init();
-			this->view->redrawScreen();
 
-			this->redrawCells(
-				0,
-				0,
-				this->screenWidth,
-				this->screenHeight,
-				false // draw all cells, even unchanged ones
-			);
-			newWidth = newHeight = 0;
+		if (!XPending(this->display)) {
+			// No more events waiting, do the time consuming things
+			if (newWidth || newHeight) {
+				int screensize = newWidth * newHeight;
+				if (screensize > this->screenWidth * this->screenHeight) {
+					delete[] this->text;
+					delete[] this->changed;
+					this->text    = new uint8_t[screensize];
+					this->changed = new uint8_t[screensize];
+				}
+				memset(this->text,    0, screensize);
+				memset(this->changed, 1, screensize);
+				this->screenWidth = newWidth;
+				this->screenHeight = newHeight;
+				this->view->init();
+				this->view->redrawScreen();
+
+				this->redrawCells(
+					0,
+					0,
+					this->screenWidth,
+					this->screenHeight,
+					false // draw all cells, even unchanged ones
+				);
+				newWidth = newHeight = 0;
+			}
 		}
-	} while (running);
+	}
 	return;
 }
 
