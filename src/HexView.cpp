@@ -500,6 +500,14 @@ void HexView::moveCursor(int delta)
 			return;
 		}
 	}
+
+	// Make sure the cursor doesn't somehow end up past the end of the screen.
+	// This can happen when shrinking the line width if the cursor is near the
+	// end of the page, for example.
+	if (this->cursorOffset >= this->iLineWidth * iHeight) {
+		this->cursorOffset = this->iLineWidth * iHeight - 1;
+	}
+
 	int newOffset = this->cursorOffset + delta;
 	if (newOffset < 0) {
 		this->scrollRel(delta);
