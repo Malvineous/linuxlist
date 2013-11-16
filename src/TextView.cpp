@@ -297,7 +297,7 @@ void TextView::redrawLines(int iTop, int iBottom, int width)
 			int prev = -1;
 			int x;
 			for (x = 0; (x < width) && !eof; x++) {
-				int c;
+				unsigned int c;
 				if (!file.read(this->bitWidth, &c)) {
 					eof = true;
 					this->cacheComplete = true; // cached all lines in file now
@@ -382,7 +382,7 @@ void TextView::cacheLines(int maxLine, int width)
 		int prev = -1;
 		for (int i = cachedLines; (i <= maxLine) && !eof; i++) {
 			for (int x = 0; x < width; x++) {
-				int c;
+				unsigned int c;
 				if (!file.read(this->bitWidth, &c)) {
 					eof = true;
 					this->cacheComplete = true; // cached all lines in file now

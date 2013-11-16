@@ -40,7 +40,7 @@ HexView::HexView(std::string strFilename, camoto::stream::inout_sptr data,
 		editMode(View),
 		hexEditOffset(0)
 {
-	this->pLineBuffer = new int[this->iLineAlloc];
+	this->pLineBuffer = new unsigned int[this->iLineAlloc];
 }
 
 HexView::HexView(const FileView& parent)
@@ -52,7 +52,7 @@ HexView::HexView(const FileView& parent)
 		editMode(View),
 		hexEditOffset(0)
 {
-	this->pLineBuffer = new int[this->iLineAlloc];
+	this->pLineBuffer = new unsigned int[this->iLineAlloc];
 }
 
 HexView::~HexView()
@@ -339,7 +339,8 @@ void HexView::redrawLines(int iTop, int iBottom)
 	return;
 }
 
-void HexView::drawLine(int iLine, unsigned long iOffset, const int *pData, int iLen)
+void HexView::drawLine(int iLine, unsigned long iOffset,
+	const unsigned int *pData, int iLen)
 {
 	this->pConsole->gotoxy(0, iLine);
 	std::ostringstream osHex;
@@ -353,7 +354,7 @@ void HexView::drawLine(int iLine, unsigned long iOffset, const int *pData, int i
 	// Number of chars wide each num is (e.g. 9-bit nums are three chars wide)
 	int cellNumberWidth = CALC_HEXCELL_WIDTH;
 
-	const int *pb = pData;
+	const unsigned int *pb = pData;
 	for (int i = 0; i < iLen; pb++, i++) {
 
 		// Hex display (middle)
@@ -407,7 +408,7 @@ void HexView::adjustLineWidth(int delta)
 		if (this->iLineWidth > this->iLineAlloc) {
 			// Enlarge the buffer
 			delete[] this->pLineBuffer;
-			this->pLineBuffer = new int[this->iLineWidth];
+			this->pLineBuffer = new unsigned int[this->iLineWidth];
 			this->iLineAlloc = this->iLineWidth;
 		}
 		this->redrawScreen();
@@ -549,7 +550,7 @@ void HexView::writeByteAtCursor(unsigned int byte)
 		case HexEdit: {
 			// TODO: Just make use of the bitstream functions to handle all this!
 			this->file.seek(dest, camoto::stream::start);
-			int cur;
+			unsigned int cur;
 			if (!this->file.read(this->bitWidth, &cur)) {
 				this->statusAlert("Read error getting byte to update :-(");
 				return;

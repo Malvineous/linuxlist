@@ -27,7 +27,7 @@
 class HexView: public FileView
 {
 	int iLineWidth;           ///< Size of line shown to user, initially 16 chars
-	int *pLineBuffer;         ///< Line buffer, initially 16 chars
+	unsigned int *pLineBuffer;///< Line buffer, initially 16 chars
 	int iLineAlloc;           ///< Size of pLineBuffer in bytes (may be > iLineWidth)
 	unsigned int cursorOffset;///< Cursor position (in bytes) relative to iOffset
 	int hexEditOffset;        ///< Offset (in on-screen chars) within byte in hex edit mode
@@ -92,7 +92,8 @@ class HexView: public FileView
 		 * @param iLen
 		 *   Line length/length of pData
 		 */
-		void drawLine(int iLine, unsigned long iOffset, const int *pData, int iLen);
+		void drawLine(int iLine, unsigned long iOffset, const unsigned int *pData,
+			int iLen);
 
 		/// Increase or decrease the line width.
 		/**
