@@ -19,11 +19,13 @@
  */
 
 #include <sstream>
+#include <camoto/stream_file.hpp>
 #include "FileView.hpp"
 
 FileView::FileView(std::string strFilename, camoto::stream::inout_sptr data,
 	IConsole *pConsole)
 	:	strFilename(strFilename),
+		readonly(dynamic_cast<camoto::stream::file *>(data.get())->readonly()),
 		file(data, camoto::bitstream::littleEndian),
 		pConsole(pConsole),
 		bStatusAlertVisible(true), // trigger an update when next set
@@ -36,6 +38,7 @@ FileView::FileView(std::string strFilename, camoto::stream::inout_sptr data,
 
 FileView::FileView(const FileView& parent)
 	:	strFilename(parent.strFilename),
+		readonly(parent.readonly),
 		file(parent.file),
 		pConsole(parent.pConsole),
 		bStatusAlertVisible(true), // trigger an update when next set
@@ -56,7 +59,11 @@ void FileView::init()
 	this->pConsole->setStatusBar(SB_TOP, SB_LEFT, this->strFilename,
 		SB_NO_CURSOR_MOVE);
 	this->bStatusAlertVisible = true; // force redraw
-	this->statusAlert(NULL); // draw the bottom status bar with no alert
+	if (this->readonly) {
+		this->statusAlert("File is read-only");
+	} else {
+		this->statusAlert(NULL); // draw the bottom status bar with no alert
+	}
 }
 
 void FileView::updateTextEntry(const std::string& prompt,

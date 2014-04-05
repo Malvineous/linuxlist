@@ -106,6 +106,7 @@ class FileView: virtual public IView
 
 	protected:
 		std::string strFilename;  ///< Filename of open file
+		bool readonly;            ///< Is the file open in read-only mode?
 		camoto::bitstream file;   ///< Bitstream for reading data from file
 		IConsole *pConsole;       ///< Console used for drawing content
 		bool bStatusAlertVisible; ///< true if an alert is visible in the status bar

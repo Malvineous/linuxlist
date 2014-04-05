@@ -114,7 +114,11 @@ int main(int iArgC, char *cArgV[])
 
 	std::string strFilename = cArgV[1];
 	camoto::stream::file_sptr fsFile(new camoto::stream::file());
-	fsFile->open(strFilename);
+	try {
+		fsFile->open(strFilename);
+	} catch (const camoto::stream::open_error&) {
+		fsFile->open_readonly(strFilename);
+	}
 
 	IViewPtr pView;
 	switch (::cfg.view) {

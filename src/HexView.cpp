@@ -544,6 +544,10 @@ void HexView::moveCursor(int delta)
 
 void HexView::writeByteAtCursor(unsigned int byte)
 {
+	if (this->readonly) {
+		this->statusAlert("File is read-only");
+		return;
+	}
 	camoto::stream::pos iCurOffset = this->iOffset + this->cursorOffset;
 	int dest = iCurOffset * this->bitWidth + this->intraByteOffset;
 	switch (this->editMode) {
