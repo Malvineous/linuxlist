@@ -20,6 +20,7 @@ config.status
 stamp-h1
 lib*.pc
 libtool
+compile
 *.*~
 
 # Compilation fluff
