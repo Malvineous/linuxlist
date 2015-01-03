@@ -2,7 +2,7 @@
  * @file   HexView.cpp
  * @brief  IView implementation for a hex editor view.
  *
- * Copyright (C) 2009-2012 Adam Nielsen <malvineous@shikadi.net>
+ * Copyright (C) 2009-2015 Adam Nielsen <malvineous@shikadi.net>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -199,13 +199,13 @@ void HexView::generateHeader(std::ostringstream& ss)
 	return;
 }
 
-void HexView::scrollAbs(unsigned long iNewOffset)
+void HexView::scrollAbs(camoto::stream::pos iNewOffset)
 {
 	this->scrollRel(iNewOffset - this->iOffset);
 	return;
 }
 
-void HexView::scrollRel(int iDelta)
+void HexView::scrollRel(camoto::stream::delta iDelta)
 {
 	if (iDelta == 0) return; // e.g. pressing Home twice
 
@@ -218,7 +218,7 @@ void HexView::scrollRel(int iDelta)
 	//
 
 	// Convert the file size from bytes into whatever bitwidth we're currently using
-	unsigned long sizeInCells = (this->iFileSize << 3) / this->bitWidth;
+	camoto::stream::pos sizeInCells = (this->iFileSize << 3) / this->bitWidth;
 
 	// If the user wants to scroll up, towards the start of the file...
 	if (iDelta < 0) {

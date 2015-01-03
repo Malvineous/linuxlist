@@ -2,7 +2,7 @@
  * @file   HexView.hpp
  * @brief  IView implementation for a hex editor view.
  *
- * Copyright (C) 2009-2012 Adam Nielsen <malvineous@shikadi.net>
+ * Copyright (C) 2009-2015 Adam Nielsen <malvineous@shikadi.net>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -56,7 +56,7 @@ class HexView: public FileView
 		 * @param iNewOffset
 		 *   Offset to of byte to appear at (0,0)
 		 */
-		void scrollAbs(unsigned long iNewOffset);
+		void scrollAbs(camoto::stream::pos iNewOffset);
 
 		/// Scroll by this number of chars.
 		/**
@@ -65,7 +65,7 @@ class HexView: public FileView
 		 *   scroll forward one byte.  -this->iLineWidth will scroll up one line,
 		 *   +this->iLineWidth will scroll down one line.
 		 */
-		void scrollRel(int iDelta);
+		void scrollRel(camoto::stream::delta iDelta);
 
 		/// Redraw part of the screen.
 		/**
