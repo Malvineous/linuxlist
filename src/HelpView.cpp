@@ -83,13 +83,12 @@
 	"  along with this program.  If not, see <http://www.gnu.org/licenses/>.\n"
 
 struct helpContent {
-	std::string content;
 	camoto::stream::string_sptr contentStream;
 	helpContent() :
-		content(HELP_TEXT, sizeof(HELP_TEXT) - 1),
 		contentStream(new camoto::stream::string())
 	{
-		this->contentStream->open(&this->content);
+		boost::shared_ptr<std::string> content(new std::string(HELP_TEXT, sizeof(HELP_TEXT) - 1));
+		this->contentStream->open(content);
 	}
 };
 helpContent help;
