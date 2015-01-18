@@ -25,7 +25,6 @@
 FileView::FileView(std::string strFilename, camoto::stream::inout_sptr data,
 	IConsole *pConsole)
 	:	strFilename(strFilename),
-		readonly(dynamic_cast<camoto::stream::file *>(data.get())->readonly()),
 		file(data, camoto::bitstream::littleEndian),
 		pConsole(pConsole),
 		bStatusAlertVisible(true), // trigger an update when next set
@@ -34,6 +33,9 @@ FileView::FileView(std::string strFilename, camoto::stream::inout_sptr data,
 		iOffset(0),
 		iFileSize(data->size())
 {
+	camoto::stream::file *file = dynamic_cast<camoto::stream::file *>(data.get());
+	if (file) this->readonly = file->readonly();
+	else this->readonly = true; // memory stream
 }
 
 FileView::FileView(const FileView& parent)
