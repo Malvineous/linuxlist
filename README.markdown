@@ -1,5 +1,5 @@
 Linux List - a Linux clone of Vernon D. Buerg's List file viewer  
-Copyright 2009-2010 Adam Nielsen <malvineous@shikadi.net>  
+Copyright 2009-2015 Adam Nielsen <malvineous@shikadi.net>  
 http://www.shikadi.net/ll
 
 This program is still very early in development, so there is still much to
