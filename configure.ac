@@ -23,8 +23,8 @@ AM_COND_IF([HAVE_X], [
 ])
 #AC_CHECK_LIB([X11], [XOpenDisplay])
 
-BOOST_REQUIRE([1.37])
-PKG_CHECK_MODULES([libgamecommon], [libgamecommon])
+AX_BOOST_BASE([1.46], [], [AC_MSG_ERROR([Could not find Boost])])
+PKG_CHECK_MODULES([libgamecommon], [libgamecommon < 2.0])
 
 AX_WITH_CURSES
 AM_CONDITIONAL([HAVE_NCURSES], [test "x$ax_cv_ncurses" = "xyes"])
