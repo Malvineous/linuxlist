@@ -2,7 +2,7 @@
  * @file   HelpView.cpp
  * @brief  TextView extension for showing help screen.
  *
- * Copyright (C) 2009-2015 Adam Nielsen <malvineous@shikadi.net>
+ * Copyright (C) 2009-2016 Adam Nielsen <malvineous@shikadi.net>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,7 +24,7 @@
 
 #define HELP_TEXT \
 	"Linux List - a Linux clone of Vernon D. Buerg's List file viewer\n" \
-	"Copyright 2009-2015 Adam Nielsen <malvineous@shikadi.net>\n" \
+	"Copyright 2009-2016 Adam Nielsen <malvineous@shikadi.net>\n" \
 	"http://www.shikadi.net/ll\n" \
 	"\n" \
 	"-= Keys =-\n" \
