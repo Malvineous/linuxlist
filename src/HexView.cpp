@@ -30,8 +30,8 @@
 /// Number of chars wide each num is (e.g. 9-bit nums are three chars wide)
 #define CALC_HEXCELL_WIDTH ((this->bitWidth + 3) / 4)
 
-HexView::HexView(std::string strFilename, camoto::stream::inout_sptr data,
-	IConsole *pConsole)
+HexView::HexView(std::string strFilename,
+	std::shared_ptr<camoto::stream::inout> data, IConsole *pConsole)
 	:	FileView(strFilename, data, pConsole),
 		iLineWidth(16),
 		iLineAlloc(16),

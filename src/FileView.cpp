@@ -22,7 +22,7 @@
 #include <camoto/stream_file.hpp>
 #include "FileView.hpp"
 
-FileView::FileView(std::string strFilename, camoto::stream::inout_sptr data,
+FileView::FileView(std::string strFilename, std::shared_ptr<camoto::stream::inout> data,
 	IConsole *pConsole)
 	:	strFilename(strFilename),
 		file(data, camoto::bitstream::littleEndian),
@@ -33,9 +33,11 @@ FileView::FileView(std::string strFilename, camoto::stream::inout_sptr data,
 		iOffset(0),
 		iFileSize(data->size())
 {
+/*
 	camoto::stream::file *file = dynamic_cast<camoto::stream::file *>(data.get());
 	if (file) this->readonly = file->readonly();
 	else this->readonly = true; // memory stream
+*/
 }
 
 FileView::FileView(const FileView& parent)

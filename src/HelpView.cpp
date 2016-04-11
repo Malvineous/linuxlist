@@ -18,6 +18,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <memory>
 #include <camoto/stream_string.hpp>
 #include "HelpView.hpp"
 #include "cfg.hpp"
@@ -82,15 +83,18 @@
 	"  You should have received a copy of the GNU General Public License\n" \
 	"  along with this program.  If not, see <http://www.gnu.org/licenses/>.\n"
 
-struct helpContent {
-	camoto::stream::string_sptr contentStream;
+struct helpContent
+{
 	helpContent() :
-		contentStream(new camoto::stream::string())
+		contentStream(std::make_shared<camoto::stream::string>(
+			std::string(HELP_TEXT, sizeof(HELP_TEXT) - 1)
+		))
 	{
-		boost::shared_ptr<std::string> content(new std::string(HELP_TEXT, sizeof(HELP_TEXT) - 1));
-		this->contentStream->open(content);
 	}
+
+	std::shared_ptr<camoto::stream::string> contentStream;
 };
+
 helpContent help;
 
 HelpView::HelpView(IConsole *pConsole)

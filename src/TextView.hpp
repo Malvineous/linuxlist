@@ -49,7 +49,7 @@ class TextView: public FileView
 		 * @param pConsole
 		 *   Console to draw on.
 		 */
-		TextView(std::string strFilename, camoto::stream::inout_sptr file,
+		TextView(std::string strFilename, std::shared_ptr<camoto::stream::inout> file,
 			IConsole *pConsole);
 
 		/// Create a new text view from an existing view.

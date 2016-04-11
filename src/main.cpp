@@ -113,11 +113,12 @@ int main(int iArgC, char *cArgV[])
 	}
 
 	std::string strFilename = cArgV[1];
-	camoto::stream::file_sptr fsFile(new camoto::stream::file());
+	std::shared_ptr<camoto::stream::file> fsFile;
 	try {
-		fsFile->open(strFilename);
-	} catch (const camoto::stream::open_error&) {
-		fsFile->open_readonly(strFilename);
+		fsFile = std::make_shared<camoto::stream::file>(strFilename, false /* don't create file */);
+	} catch (const camoto::stream::open_error& e) {
+		std::cerr << "Error opening file: " << e.get_message() << std::endl;
+		return 2;
 	}
 
 	IViewPtr pView;

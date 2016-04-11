@@ -41,7 +41,7 @@ class HexView: public FileView
 	EditMode editMode; ///< Current editing mode
 
 	public:
-		HexView(std::string strFilename, camoto::stream::inout_sptr data,
+		HexView(std::string strFilename, std::shared_ptr<camoto::stream::inout> data,
 			IConsole *pConsole);
 		HexView(const FileView& parent);
 		~HexView();

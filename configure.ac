@@ -2,8 +2,10 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ([2.63])
-AC_INIT([linuxlist], [0.2], [malvineous@shikadi.net])
-AM_INIT_AUTOMAKE([linuxlist], [0.2])
+AC_INIT([linuxlist], [0.3],
+	[https://github.com/Malvineous/linuxlist/issues],
+	[], [http://www.shikadi.net/ll])
+AM_INIT_AUTOMAKE([foreign dist-bzip2 no-dist-gzip])
 AC_CONFIG_SRCDIR([src/main.cpp])
 AC_CONFIG_HEADERS([config.h])
 AC_CONFIG_MACRO_DIR([m4])
@@ -23,8 +25,10 @@ AM_COND_IF([HAVE_X], [
 ])
 #AC_CHECK_LIB([X11], [XOpenDisplay])
 
+AX_CXX_COMPILE_STDCXX_11(noext, mandatory)
+
 AX_BOOST_BASE([1.46], [], [AC_MSG_ERROR([Could not find Boost])])
-PKG_CHECK_MODULES([libgamecommon], [libgamecommon < 2.0])
+PKG_CHECK_MODULES([libgamecommon], [libgamecommon >= 2.0])
 
 AX_WITH_CURSES
 AM_CONDITIONAL([HAVE_NCURSES], [test "x$ax_cv_ncurses" = "xyes"])

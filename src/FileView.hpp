@@ -49,7 +49,7 @@ class FileView: virtual public IView
 		 * @param pConsole
 		 *   Output console where data is drawn.
 		 */
-		FileView(std::string strFilename, camoto::stream::inout_sptr data,
+		FileView(std::string strFilename, std::shared_ptr<camoto::stream::inout> data,
 			IConsole *pConsole);
 
 		/// Copy constructor.

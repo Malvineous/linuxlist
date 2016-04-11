@@ -30,7 +30,7 @@
 #define min(x, y) (((x) < (y)) ? (x) : (y))
 #define max(x, y) (((x) > (y)) ? (x) : (y))
 
-TextView::TextView(std::string strFilename, camoto::stream::inout_sptr data,
+TextView::TextView(std::string strFilename, std::shared_ptr<camoto::stream::inout> data,
 	IConsole *pConsole)
 	:	FileView(strFilename, data, pConsole),
 		iLineAlloc(80),
