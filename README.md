@@ -1,5 +1,7 @@
-Linux List - a Linux clone of Vernon D. Buerg's List file viewer  
-Copyright 2009-2015 Adam Nielsen <malvineous@shikadi.net>  
+Linux List
+----------
+A Linux clone of Vernon D. Buerg's List file viewer  
+Copyright 2009-2016 Adam Nielsen <malvineous@shikadi.net>  
 http://www.shikadi.net/ll
 
 This program is still very early in development, so there is still much to
@@ -16,14 +18,19 @@ Features:
 
  * Hex view supports hex editing (via byte values and direct text entry)
 
+ * Can seek at the byte level or the bit level, which is useful for tracing
+   algorithms that operate on a stream of bits rather than on bytes.
+
 The utility is compiled and installed in the usual way:
 
-  ./configure && make
-  sudo make install
+    ./autogen.sh          # Only if compiling from git
+    ./configure && make
+    sudo make install
 
-You will need libgamecommon installed first.  If you downloaded the git
-release, run ./autogen.sh before the commands above.
+You will need the following prerequisites already installed:
+
+  * [libgamecommon](https://github.com/Malvineous/libgamecommon) >= 2.0
 
 This program is released under the GPLv3 license.
 
-![Screenshot of hex view](http://www.shikadi.net/gfx/ll/ll-hexview.png)
+![Screenshot of hex view](http://www.shikadi.net/wiki/main/images/e/ed/ll-xwindow.png)
