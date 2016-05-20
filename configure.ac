@@ -27,7 +27,6 @@ AM_COND_IF([HAVE_X], [
 
 AX_CXX_COMPILE_STDCXX_11(noext, mandatory)
 
-AX_BOOST_BASE([1.46], [], [AC_MSG_ERROR([Could not find Boost])])
 PKG_CHECK_MODULES([libgamecommon], [libgamecommon >= 2.0])
 
 AX_WITH_CURSES

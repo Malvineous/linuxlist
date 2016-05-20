@@ -34,7 +34,6 @@ EXTRA_ll_SOURCES += NCursesConsole.hpp
 # So config.h can be found
 AM_CPPFLAGS = -I $(top_srcdir)
 AM_CPPFLAGS += $(libgamecommon_CFLAGS)
-AM_CPPFLAGS += $(BOOST_CPPFLAGS)
 
 AM_LDFLAGS = $(X_LIBS)
 AM_LDFLAGS += $(CURSES_LIB)

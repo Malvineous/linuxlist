@@ -18,10 +18,11 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <string.h> // strerror()
-#include <errno.h>
 #include <cassert>
+#include <cstring> // strerror()
 #include <iostream> // for errors before we get to nCurses
+#include <errno.h>
+#include <unistd.h> // sleep()
 
 #include "cfg.hpp"
 #include "NCursesConsole.hpp"
