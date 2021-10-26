@@ -2,7 +2,7 @@ Linux List
 ----------
 A Linux clone of Vernon D. Buerg's List file viewer  
 Copyright 2009-2016 Adam Nielsen <malvineous@shikadi.net>  
-http://www.shikadi.net/ll
+https://github.com/Malvineous/linuxlist
 
 This program is still very early in development, so there is still much to
 implement before it becomes as useful as the original List.
@@ -33,4 +33,38 @@ You will need the following prerequisites already installed:
 
 This program is released under the GPLv3 license.
 
-![Screenshot of hex view](http://www.shikadi.net/wiki/main/images/e/ed/ll-xwindow.png)
+### Screenshots ###
+
+This is the hex view in Xorg, using the VGA font borrowed from DOSBox:
+
+![Screenshot of hex view in console](doc/ll-xwindow.png)
+
+This is the hex view using the rxvt-unicode terminal emulator with the Terminus
+font:
+
+![Screenshot of hex view in Xorg](doc/ll-hexview.png)
+
+This is the hex view showing nine bits per byte, which reveals ASCII characters
+in some LZW-compressed data.  Note the data is being edited in this mode as
+well:
+
+![Screenshot of hex view showing 9-bit bytes](doc/ll-9bit_lzw.png)
+
+### Fonts ###
+
+When running in a terminal emulator (automatic if the `DISPLAY` environment
+variable is empty), use of a Unicode font that supports CP437 glyphs is
+recommended.  Without this, most terminal emulators will pull the glyphs from a
+fallback font, which usually looks quite bad.
+
+For the rxvt-unicode terminal and the Terminus font (used for the screenshots
+above), this is done by ensuring the ISO10646 encoding is used.  This can be
+done by adding the following to `~/.Xresources`:
+
+```
+Rxvt*font:                -*-terminus-bold-r-*-*-*-140-*-*-*-*-iso10646-*
+Rxvt*boldFont:            -*-terminus-bold-r-*-*-*-140-*-*-*-*-iso10646-*
+```
+
+Run `xrdb -merge ~/.Xresources` to reload the file, then any new rxvt-unicode
+terminal windows will correctly display control characters.
